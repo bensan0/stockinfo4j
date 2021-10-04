@@ -6,6 +6,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ResourceBundle;
 
+/**
+ * 需要初始化的Bean
+ */
 @Configuration
 public class AppConfig {
 

@@ -1,12 +1,12 @@
 package phillip.stockinfo4j.service;
 
 import org.springframework.stereotype.Service;
-import phillip.stockinfo4j.model.DownloadReturn;
+import phillip.stockinfo4j.model.DownloaderResponse;
 
 @Service
 public interface IDownloadService {
 
-    DownloadReturn getTWSE(String date);
+    DownloaderResponse getTWSE(String date);
 
 
 }

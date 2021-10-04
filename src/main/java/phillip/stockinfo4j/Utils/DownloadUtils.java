@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 public class DownloadUtils {
 
     /**
-     *
+     * 讀取並回傳檔案內容
      * @param filePath
-     * @param codec
+     * @param codec 文件編碼(big5,utf-8...)
      * @return
      * @throws IOException
      */

@@ -1,7 +1,12 @@
-package phillip.stockinfo4j.model.stockdaily;
+package phillip.stockinfo4j.model.daily;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "stock_daily_trans",indexes= {
         @Index(columnList="code")
@@ -51,118 +56,6 @@ public class StockDailyTran {
 
     @Column(name = "per")
     private Double per;//本益比
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getTradingVol() {
-        return tradingVol;
-    }
-
-    public void setTradingVol(Integer tradingVol) {
-        this.tradingVol = tradingVol;
-    }
-
-    public Integer getDeal() {
-        return deal;
-    }
-
-    public void setDeal(Integer deal) {
-        this.deal = deal;
-    }
-
-    public Double getOpening() {
-        return opening;
-    }
-
-    public void setOpening(Double opening) {
-        this.opening = opening;
-    }
-
-    public Double getClosing() {
-        return closing;
-    }
-
-    public void setClosing(Double closing) {
-        this.closing = closing;
-    }
-
-    public Double getHighest() {
-        return highest;
-    }
-
-    public void setHighest(Double highest) {
-        this.highest = highest;
-    }
-
-    public Double getLowest() {
-        return lowest;
-    }
-
-    public void setLowest(Double lowest) {
-        this.lowest = lowest;
-    }
-
-    public Double getFluc() {
-        return fluc;
-    }
-
-    public void setFluc(Double fluc) {
-        this.fluc = fluc;
-    }
-
-    public Double getFlucPer() {
-        return flucPer;
-    }
-
-    public void setFlucPer(Double flucPer) {
-        this.flucPer = flucPer;
-    }
-
-    public Integer getDate() {
-        return date;
-    }
-
-    public void setDate(Integer date) {
-        this.date = date;
-    }
-
-    public String getCdUnion() {
-        return cdUnion;
-    }
-
-    public void setCdUnion(String cdUnion) {
-        this.cdUnion = cdUnion;
-    }
-
-    public Double getPer() {
-        return per;
-    }
-
-    public void setPer(Double per) {
-        this.per = per;
-    }
 
     @Override
     public String toString() {

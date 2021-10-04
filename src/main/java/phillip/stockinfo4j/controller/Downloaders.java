@@ -17,7 +17,7 @@ public class Downloaders {
     @Autowired
     DownloadServiceImpl downloadService;
 
-    @GetMapping("/stockdaily")
+    @GetMapping("/daily")
     public void getStockDaily(@RequestParam("date") String date) {
         downloadService.getTWSE(date);
     }
