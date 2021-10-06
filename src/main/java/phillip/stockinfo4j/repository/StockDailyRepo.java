@@ -6,5 +6,4 @@ import phillip.stockinfo4j.model.daily.StockDailyTran;
 
 @Repository
 public interface StockDailyRepo extends JpaRepository<StockDailyTran, Long> {
-
 }

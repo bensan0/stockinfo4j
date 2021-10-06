@@ -17,8 +17,13 @@ public class Downloaders {
     @Autowired
     DownloadServiceImpl downloadService;
 
+    /**
+     * 下載每日上市櫃股票交易資訊(含法人)
+     * @param yyyyMMdd
+     */
     @GetMapping("/daily")
-    public void getStockDaily(@RequestParam("date") String date) {
-        downloadService.getTWSE(date);
+    public void getStockDaily(@RequestParam("date") String yyyyMMdd) {
+        downloadService.getTWSE(yyyyMMdd);
     }
+
 }

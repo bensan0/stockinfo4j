@@ -55,7 +55,7 @@ public class StockDailyTran {
     private String cdUnion;
 
     @Column(name = "per")
-    private Double per;//本益比
+    private Double per = 0.00;//本益比
 
     @Override
     public String toString() {
