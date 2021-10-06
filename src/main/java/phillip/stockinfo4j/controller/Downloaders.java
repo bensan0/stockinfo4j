@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.service.impl.DownloadServiceImpl;
 
 @RestController
@@ -23,7 +24,12 @@ public class Downloaders {
      */
     @GetMapping("/daily")
     public void getStockDaily(@RequestParam("date") String yyyyMMdd) {
-        downloadService.getTWSE(yyyyMMdd);
+        DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
+        DownloadUtils.isDateConform(yyyyMMdd);
+        downloadService.getTPEXStockDaily(yyyyMMdd);
+        downloadService.getTWSEStockDaily(yyyyMMdd);
+        downloadService.getTPEXCorpDaily(yyyyMMdd);
+        downloadService.getTWSECorpDaily(yyyyMMdd);
     }
 
 }

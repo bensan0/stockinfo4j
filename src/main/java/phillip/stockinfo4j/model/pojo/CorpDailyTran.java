@@ -1,15 +1,15 @@
-package phillip.stockinfo4j.model.daily;
+package phillip.stockinfo4j.model.pojo;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "corp_daily_trans", indexes =
         {@Index(columnList = "code")})
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CorpDailyTran {
 
     @Column(name = "id",unique = true, nullable = false, columnDefinition = "int not null UNIQUE key auto_increment")
@@ -49,22 +49,4 @@ public class CorpDailyTran {
     @Id
     @Column(name = "cd_union",nullable = false,length = 20)
     private String cdUnion;
-
-    @Override
-    public String toString() {
-        return "CorpDailyTran{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", name='" + name + '\'' +
-                ", foreignInvestors=" + foreignInvestors +
-                ", foreignCorp=" + foreignCorp +
-                ", investmentTrust=" + investmentTrust +
-                ", dealer=" + dealer +
-                ", dealerSelf=" + dealerSelf +
-                ", dealerHedge=" + dealerHedge +
-                ", total=" + total +
-                ", date=" + date +
-                ", cdUnion='" + cdUnion + '\'' +
-                '}';
-    }
 }

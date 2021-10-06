@@ -2,6 +2,7 @@ package phillip.stockinfo4j.appconfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ResourceBundle;
@@ -10,7 +11,7 @@ import java.util.ResourceBundle;
  * 需要初始化的Bean
  */
 @Configuration
-public class AppConfig {
+public class BeanConfig {
 
     @Bean
     public RestTemplate restTemplate(){

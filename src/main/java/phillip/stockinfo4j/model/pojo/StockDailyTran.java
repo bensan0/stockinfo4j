@@ -1,16 +1,16 @@
-package phillip.stockinfo4j.model.daily;
+package phillip.stockinfo4j.model.pojo;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "stock_daily_trans",indexes= {
         @Index(columnList="code")
 })
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class StockDailyTran {
 
     @Column(name = "id",unique = true, nullable = false, columnDefinition = "int not null UNIQUE key auto_increment")
@@ -56,24 +56,4 @@ public class StockDailyTran {
 
     @Column(name = "per")
     private Double per = 0.00;//本益比
-
-    @Override
-    public String toString() {
-        return "StockDailyTran{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", name='" + name + '\'' +
-                ", tradingVol=" + tradingVol +
-                ", deal=" + deal +
-                ", opening=" + opening +
-                ", closing=" + closing +
-                ", highest=" + highest +
-                ", lowest=" + lowest +
-                ", fluc=" + fluc +
-                ", flucPer=" + flucPer +
-                ", date=" + date +
-                ", cdUnion='" + cdUnion + '\'' +
-                ", per=" + per +
-                '}';
-    }
 }

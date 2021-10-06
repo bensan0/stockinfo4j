@@ -1,14 +1,16 @@
-package phillip.stockinfo4j.model;
+package phillip.stockinfo4j.model.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import phillip.stockinfo4j.errorhandle.impl.ErrorEnum;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class DownloaderResponse {
     private List<ErrorEnum> errorMessage = new ArrayList<>();
 }
