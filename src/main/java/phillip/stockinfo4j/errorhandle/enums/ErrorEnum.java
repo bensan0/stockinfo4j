@@ -1,4 +1,4 @@
-package phillip.stockinfo4j.errorhandle.impl;
+package phillip.stockinfo4j.errorhandle.enums;
 
 import phillip.stockinfo4j.errorhandle.IBaseErrorInfo;
 

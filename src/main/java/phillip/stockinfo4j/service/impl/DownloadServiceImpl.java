@@ -1,18 +1,23 @@
 package phillip.stockinfo4j.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.model.dto.DownloaderResponse;
+import phillip.stockinfo4j.errorhandle.exceptions.SavedFailException;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
-import phillip.stockinfo4j.service.IDownloadService;
+import phillip.stockinfo4j.repository.CorpDailyRepo;
+import phillip.stockinfo4j.repository.StockDailyRepo;
+import phillip.stockinfo4j.service.DownloadService;
 
 import java.io.IOException;
 import java.math.RoundingMode;
@@ -22,9 +27,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
-public class DownloadServiceImpl /*implements IDownloadService*/ {
+public class DownloadServiceImpl implements DownloadService {
 
     @Autowired
     private ResourceBundle resource;
@@ -38,93 +44,68 @@ public class DownloadServiceImpl /*implements IDownloadService*/ {
 //    @Autowired
 //    private CorpDailyRepo corpDailyRepo;
 
+    @Autowired
+    private ApplicationContext applicationContext;
 
-    /**
-     * 給外部調用
-     *
-     * @param date
-     * @return
-     */
-//    @Override
-    public DownloaderResponse getDaily(String date) {
-        getTPEXCorpDaily(date);
-        getTPEXStockDaily(date);
-        getTWSECorpDaily(date);
-        getTWSEStockDaily(date);
-        return null;
+    @Async("executor")
+    public void getDaily(String date) throws IOException {
+        applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
+        applicationContext.getBean(DownloadService.class).getTWSECorpDaily(date);
+        applicationContext.getBean(DownloadService.class).getTPEXStockDaily(date);
+        applicationContext.getBean(DownloadService.class).getTPEXCorpDaily(date);
     }
 
     /**
-     *
      * @param date
      */
     @Async("executor")
-    public void getTWSEStockDaily(String date){
-        String threadName = Thread.currentThread().getName();
-        System.out.println(threadName + ":getTWSEStockDaily start");
-        try {
-            String filePath = downloadTWSEStockDaily(date);
-            filtTWSEStockDaily(filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(threadName + ":getTWSEStockDaily end");
+    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws IOException{
+        String name = Thread.currentThread().getName();
+        System.out.println(name + ":getTWSEStockDaily 開始");
+        String filePath = downloadTWSEStockDaily(date);
+        List<StockDailyTran> tranList = filtTWSEStockDaily(filePath);
+        System.out.println(name + ":getTWSEStockDaily 結束");
+        return CompletableFuture.completedFuture(tranList);
     }
 
     /**
-     *
      * @param date
      */
     @Async("executor")
-    public void getTWSECorpDaily(String date){
-        String threadName = Thread.currentThread().getName();
-        System.out.println(threadName + ":getTWSECorpDaily start");
-        try {
-            String filePath = downloadTWSECorpDaily(date);
-            filtTWSECorpDaily(filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(threadName + ":getTWSECorpDaily end");
+    public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) throws IOException {
+        String name = Thread.currentThread().getName();
+        System.out.println(name + ":getTWSECorpDaily開始");
+        String filePath = downloadTWSECorpDaily(date);
+        List<CorpDailyTran> tranList = filtTWSECorpDaily(filePath);
+        System.out.println(name + ":getTWSECorpDaily結束");
+        return CompletableFuture.completedFuture(tranList);
     }
 
     /**
-     *
      * @param date
      */
     @Async("executor")
-    public void getTPEXStockDaily(String date){
-        String threadName = Thread.currentThread().getName();
-        System.out.println(threadName + ":getTPEXStockDaily start");
-        try {
-            String filePath = downloadTPEXStockDaily(date);
-            filtTPEXStockDaily(filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(threadName + ":getTPEXStockDaily end");
+    public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) throws IOException {
+        String name = Thread.currentThread().getName();
+        System.out.println(name + ":getTPEXStockDaily 開始");
+        String filePath = downloadTPEXStockDaily(date);
+        List<StockDailyTran> tranList = filtTPEXStockDaily(filePath);
+        System.out.println(name + ":getTPEXStockDaily 結束");
+        return CompletableFuture.completedFuture(tranList);
     }
 
     /**
-     *
      * @param date
      */
     @Async("executor")
-    public void getTPEXCorpDaily(String date){
-        String threadName = Thread.currentThread().getName();
-        System.out.println(threadName + ":getTPEXCorpDaily start");
-        try {
-            String filePath = downloadTPEXCorpDaily(date);
-            filtTPEXCorpDaily(filePath);
-            Thread.sleep(2000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }catch (InterruptedException e1){
-            e1.printStackTrace();
-        }
-        System.out.println(threadName + ":getTPEXCorpDaily end");
+    public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) throws IOException {
+        String name = Thread.currentThread().getName();
+        System.out.println(name + ":getTPEXCorpDaily 開始");
+        String filePath = downloadTPEXCorpDaily(date);
+        List<CorpDailyTran> tranList = filtTPEXCorpDaily(filePath);
+        System.out.println(name + ":getTPEXCorpDaily 結束");
+        return CompletableFuture.completedFuture(tranList);
     }
-
 
 
     /**
@@ -468,27 +449,31 @@ public class DownloadServiceImpl /*implements IDownloadService*/ {
 
     /**
      * 儲存每日股票交易
+     *
      * @param tranList
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-//    private void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, NullPointerException{
+//    @Transactional
+//    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SavedFailException {
 //        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
-//        if (stockDailyTrans.size()==0||stockDailyTrans==null){
-//            throw new NullPointerException();
+//        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
+//            throw new SavedFailException("儲存每日股票交易失敗");
 //        }
 //    }
 
     /**
      * 儲存每日法人交易
+     *
      * @param tranList
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-//    private void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, NullPointerException{
+//    @Transactional
+//    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, NullPointerException {
 //        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
-//        if (corpDailyTrans.size()==0||corpDailyTrans==null){
-//            throw new NullPointerException();
+//        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
+//            throw new SavedFailException("儲存每日法人交易失敗");
 //        }
 //    }
 

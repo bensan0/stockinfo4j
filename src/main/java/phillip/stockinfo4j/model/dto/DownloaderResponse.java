@@ -3,7 +3,7 @@ package phillip.stockinfo4j.model.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import phillip.stockinfo4j.errorhandle.impl.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 
 import java.util.ArrayList;
 import java.util.List;

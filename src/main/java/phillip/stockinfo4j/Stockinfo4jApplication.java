@@ -14,6 +14,4 @@ public class Stockinfo4jApplication {
     public static void main(String[] args) {
         SpringApplication.run(Stockinfo4jApplication.class, args);
     }
-
-
 }

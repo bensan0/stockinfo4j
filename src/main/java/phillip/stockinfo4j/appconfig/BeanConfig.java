@@ -1,9 +1,11 @@
 package phillip.stockinfo4j.appconfig;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import phillip.stockinfo4j.service.DownloadService;
 
 import java.util.ResourceBundle;
 
@@ -12,6 +14,9 @@ import java.util.ResourceBundle;
  */
 @Configuration
 public class BeanConfig {
+
+    @Autowired
+    ApplicationContext applicationContext;
 
     @Bean
     public RestTemplate restTemplate(){
