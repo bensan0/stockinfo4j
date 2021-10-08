@@ -6,10 +6,11 @@ import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public interface DownloadService {
 
-    void getDaily(String date) throws IOException;
+    void getDaily(String date) throws IOException, ExecutionException, InterruptedException;
 
     CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws IOException;
 

@@ -3,6 +3,7 @@ package phillip.stockinfo4j.model.pojo;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "corp_daily_trans", indexes =
@@ -10,9 +11,9 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CorpDailyTran {
+public class CorpDailyTran implements Serializable {
 
-    @Column(name = "id",unique = true, nullable = false, columnDefinition = "int not null UNIQUE key auto_increment")
+    @Column(name = "id",unique = true, columnDefinition = "int not null UNIQUE key auto_increment")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 

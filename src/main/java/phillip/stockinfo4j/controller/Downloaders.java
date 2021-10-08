@@ -7,9 +7,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.exceptions.SavedFailException;
+import phillip.stockinfo4j.model.dto.DownloaderResponse;
 import phillip.stockinfo4j.service.DownloadService;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("downloaders")
@@ -26,14 +30,26 @@ public class Downloaders {
      * @param yyyyMMdd
      */
     @GetMapping("/daily")
-    public void getStockDaily(@RequestParam("date") String yyyyMMdd) {
+    public DownloaderResponse getStockDaily(@RequestParam("date") String yyyyMMdd) {
         DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
         DownloadUtils.isDateConform(yyyyMMdd);
+        DownloaderResponse resp = new DownloaderResponse();
+        if (!DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd)||!DownloadUtils.isDateConform(yyyyMMdd)){
+            resp.setErrorMessage(ErrorEnum.DateFormatNotAllowed);
+        }
         try {
             downloadService.getDaily(yyyyMMdd);
         } catch (IOException e) {
-            e.printStackTrace();
+            resp.setErrorMessage(ErrorEnum.FailedToReadFile);
+        } catch (ExecutionException e) {
+            resp.setErrorMessage(ErrorEnum.ExecutionError);
+        } catch (InterruptedException e) {
+            resp.setErrorMessage(ErrorEnum.TreadInterrupted);
+        } catch (SavedFailException e){
+            resp.setErrorMessage(ErrorEnum.FailedSave);
         }
+        return resp;
+
 
     }
 

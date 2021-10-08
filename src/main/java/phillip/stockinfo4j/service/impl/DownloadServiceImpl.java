@@ -25,9 +25,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class DownloadServiceImpl implements DownloadService {
@@ -38,21 +40,38 @@ public class DownloadServiceImpl implements DownloadService {
     @Autowired
     private RestTemplate restTemplate;
 
-//    @Autowired
-//    private StockDailyRepo stockDailyRepo;
-//
-//    @Autowired
-//    private CorpDailyRepo corpDailyRepo;
+    @Autowired
+    private StockDailyRepo stockDailyRepo;
+
+    @Autowired
+    private CorpDailyRepo corpDailyRepo;
 
     @Autowired
     private ApplicationContext applicationContext;
 
+    /**
+     * 下載並儲存所有每日
+     * @param date
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws SavedFailException
+     */
     @Async("executor")
-    public void getDaily(String date) throws IOException {
-        applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
-        applicationContext.getBean(DownloadService.class).getTWSECorpDaily(date);
-        applicationContext.getBean(DownloadService.class).getTPEXStockDaily(date);
-        applicationContext.getBean(DownloadService.class).getTPEXCorpDaily(date);
+    @Transactional
+    public void getDaily(String date) throws IOException, ExecutionException, InterruptedException, SavedFailException {
+        List<StockDailyTran> stockDailyTrans = new LinkedList<>();
+        List<CorpDailyTran> corpDailyTrans = new LinkedList<>();
+        CompletableFuture<List<StockDailyTran>> twseStockDailyFuture = applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
+        CompletableFuture<List<CorpDailyTran>> twseCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTWSECorpDaily(date);
+        CompletableFuture<List<StockDailyTran>> tpexStockDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXStockDaily(date);
+        CompletableFuture<List<CorpDailyTran>> tpexCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXCorpDaily(date);
+        stockDailyTrans.addAll(twseStockDailyFuture.get());
+        stockDailyTrans.addAll(tpexStockDailyFuture.get());
+        corpDailyTrans.addAll(twseCorpDailyFuture.get());
+        corpDailyTrans.addAll(tpexCorpDailyFuture.get());
+        saveStockDaily(stockDailyTrans);
+        saveCorpDaily(corpDailyTrans);
     }
 
     /**
@@ -131,7 +150,7 @@ public class DownloadServiceImpl implements DownloadService {
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
             }
-            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName));
+            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName),StandardCopyOption.REPLACE_EXISTING);
             return null;
         };
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
@@ -191,6 +210,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setPer(parseStrToDouble(split1[15]));
                 tranList.add(tran);
             }
+            deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -220,7 +240,7 @@ public class DownloadServiceImpl implements DownloadService {
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
             }
-            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName));
+            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
             return null;
         };
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
@@ -271,6 +291,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setCdUnion(tran.getCode() + tran.getDate());
                 tranList.add(tran);
             }
+            deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -301,7 +322,7 @@ public class DownloadServiceImpl implements DownloadService {
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
             }
-            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName));
+            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
             return null;
         };
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
@@ -358,6 +379,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setCdUnion(tran.getCode() + tran.getDate());
                 tranList.add(tran);
             }
+            deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -387,7 +409,7 @@ public class DownloadServiceImpl implements DownloadService {
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
             }
-            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName));
+            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
             return null;
         };
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
@@ -441,6 +463,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setCdUnion(tran.getCode() + tran.getDate());
                 tranList.add(tran);
             }
+            deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -454,13 +477,17 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-//    @Transactional
-//    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SavedFailException {
-//        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
-//        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
-//            throw new SavedFailException("儲存每日股票交易失敗");
-//        }
-//    }
+    @Transactional
+    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SavedFailException {
+        System.out.println("儲存stockdaily開始");
+        long l1 = System.currentTimeMillis();
+        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
+        long l2 = System.currentTimeMillis();
+        System.out.println("儲存stockdaily結束,共花:" + (l1-l2) + "豪秒");
+        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
+            throw new SavedFailException("儲存每日股票交易失敗");
+        }
+    }
 
     /**
      * 儲存每日法人交易
@@ -469,13 +496,13 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-//    @Transactional
-//    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, NullPointerException {
-//        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
-//        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
-//            throw new SavedFailException("儲存每日法人交易失敗");
-//        }
-//    }
+    @Transactional
+    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, SavedFailException {
+        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
+        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
+            throw new SavedFailException("儲存每日法人交易失敗");
+        }
+    }
 
     /**
      * @param str
@@ -514,7 +541,12 @@ public class DownloadServiceImpl implements DownloadService {
         return df;
     }
 
-    public static void main(String[] args) {
-
+    /**
+     * 刪除檔案
+     * @param filePath
+     * @throws IOException
+     */
+    private void deleteFile(String filePath) throws IOException {
+        Files.deleteIfExists(Paths.get(filePath));
     }
 }
