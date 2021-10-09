@@ -2,7 +2,6 @@ package phillip.stockinfo4j.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
@@ -12,7 +11,9 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.errorhandle.exceptions.SavedFailException;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveFailException;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveStockDailyFailedException;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
@@ -40,26 +41,27 @@ public class DownloadServiceImpl implements DownloadService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private StockDailyRepo stockDailyRepo;
-
-    @Autowired
-    private CorpDailyRepo corpDailyRepo;
+//    @Autowired
+//    private StockDailyRepo stockDailyRepo;
+//
+//    @Autowired
+//    private CorpDailyRepo corpDailyRepo;
 
     @Autowired
     private ApplicationContext applicationContext;
 
     /**
      * 下載並儲存所有每日
+     *
      * @param date
      * @throws IOException
      * @throws ExecutionException
      * @throws InterruptedException
-     * @throws SavedFailException
+     * @throws SaveFailException
      */
     @Async("executor")
     @Transactional
-    public void getDaily(String date) throws IOException, ExecutionException, InterruptedException, SavedFailException {
+    public void getDaily(String date) throws IOException, ExecutionException, InterruptedException, SaveFailException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
         List<CorpDailyTran> corpDailyTrans = new LinkedList<>();
         CompletableFuture<List<StockDailyTran>> twseStockDailyFuture = applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
@@ -70,15 +72,15 @@ public class DownloadServiceImpl implements DownloadService {
         stockDailyTrans.addAll(tpexStockDailyFuture.get());
         corpDailyTrans.addAll(twseCorpDailyFuture.get());
         corpDailyTrans.addAll(tpexCorpDailyFuture.get());
-        saveStockDaily(stockDailyTrans);
-        saveCorpDaily(corpDailyTrans);
+//        saveStockDaily(stockDailyTrans);
+//        saveCorpDaily(corpDailyTrans);
     }
 
     /**
      * @param date
      */
     @Async("executor")
-    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws IOException{
+    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws IOException {
         String name = Thread.currentThread().getName();
         System.out.println(name + ":getTWSEStockDaily 開始");
         String filePath = downloadTWSEStockDaily(date);
@@ -150,7 +152,7 @@ public class DownloadServiceImpl implements DownloadService {
             if (!Files.exists(path)) {
                 Files.createDirectory(path);
             }
-            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName),StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
             return null;
         };
         restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
@@ -477,17 +479,17 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-    @Transactional
-    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SavedFailException {
-        System.out.println("儲存stockdaily開始");
-        long l1 = System.currentTimeMillis();
-        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
-        long l2 = System.currentTimeMillis();
-        System.out.println("儲存stockdaily結束,共花:" + (l1-l2) + "豪秒");
-        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
-            throw new SavedFailException("儲存每日股票交易失敗");
-        }
-    }
+//    @Transactional(rollbackFor = Exception.class)
+//    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SaveStockDailyFailedException {
+//        System.out.println("儲存stockdaily開始");
+//        long l1 = System.currentTimeMillis();
+//        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
+//        long l2 = System.currentTimeMillis();
+//        System.out.println("儲存stockdaily結束,共花:" + (l1 - l2) + "豪秒");
+//        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
+//            throw new SaveStockDailyFailedException();
+//        }
+//    }
 
     /**
      * 儲存每日法人交易
@@ -496,13 +498,13 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-    @Transactional
-    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, SavedFailException {
-        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
-        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
-            throw new SavedFailException("儲存每日法人交易失敗");
-        }
-    }
+//    @Transactional(rollbackFor = Exception.class)
+//    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, SaveCorpDailyFailedException {
+//        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
+//        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
+//            throw new SaveCorpDailyFailedException();
+//        }
+//    }
 
     /**
      * @param str
@@ -543,6 +545,7 @@ public class DownloadServiceImpl implements DownloadService {
 
     /**
      * 刪除檔案
+     *
      * @param filePath
      * @throws IOException
      */

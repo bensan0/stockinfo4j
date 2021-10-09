@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.ResourceBundle;
 
-@SpringBootApplication(/*exclude= {DataSourceAutoConfiguration.class}*/)
+@SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})
 public class Stockinfo4jApplication {
 
     public static void main(String[] args) {

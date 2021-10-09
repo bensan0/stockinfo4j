@@ -1,5 +1,6 @@
 package phillip.stockinfo4j.controller;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,11 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
-import phillip.stockinfo4j.errorhandle.exceptions.SavedFailException;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveFailException;
 import phillip.stockinfo4j.model.dto.DownloaderResponse;
 import phillip.stockinfo4j.service.DownloadService;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -30,27 +32,20 @@ public class Downloaders {
      * @param yyyyMMdd
      */
     @GetMapping("/daily")
-    public DownloaderResponse getStockDaily(@RequestParam("date") String yyyyMMdd) {
+    public DownloaderResponse getStockDaily(@RequestParam("date") String yyyyMMdd) throws IOException, ExecutionException, InterruptedException,SaveFailException {
         DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
         DownloadUtils.isDateConform(yyyyMMdd);
         DownloaderResponse resp = new DownloaderResponse();
         if (!DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd)||!DownloadUtils.isDateConform(yyyyMMdd)){
             resp.setErrorMessage(ErrorEnum.DateFormatNotAllowed);
         }
-        try {
-            downloadService.getDaily(yyyyMMdd);
-        } catch (IOException e) {
-            resp.setErrorMessage(ErrorEnum.FailedToReadFile);
-        } catch (ExecutionException e) {
-            resp.setErrorMessage(ErrorEnum.ExecutionError);
-        } catch (InterruptedException e) {
-            resp.setErrorMessage(ErrorEnum.TreadInterrupted);
-        } catch (SavedFailException e){
-            resp.setErrorMessage(ErrorEnum.FailedSave);
-        }
+        downloadService.getDaily(yyyyMMdd);
         return resp;
+    }
 
-
+    @GetMapping("/testAdvice")
+    public DownloaderResponse getEx() throws InterruptedException {
+        throw new InterruptedException("測試Inte");
     }
 
 }
