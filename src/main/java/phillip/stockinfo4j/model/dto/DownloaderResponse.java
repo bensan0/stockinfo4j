@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,5 +14,6 @@ import java.util.List;
 @Component
 public class DownloaderResponse implements Serializable {
     private ErrorEnum errorMessage = ErrorEnum.Success;
-    private List<String> errorDetail = new ArrayList<>();
+
+    private String errorDetail = "";
 }

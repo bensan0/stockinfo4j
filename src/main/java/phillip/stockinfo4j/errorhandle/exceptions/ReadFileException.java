@@ -4,10 +4,13 @@ import lombok.NoArgsConstructor;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 
 @NoArgsConstructor
-public class SaveCorpDailyFailedException extends CustomRuntimeException {
+public class ReadFileException extends CustomRuntimeException {
 
-    public SaveCorpDailyFailedException(ErrorEnum errorEnum, String msg){
-        this.setMsg(msg);
+    public ReadFileException(ErrorEnum errorEnum, String msg) {
         this.setErrorEnum(errorEnum);
+        this.setOriginalMsg(msg);
     }
+
+    ;
+
 }

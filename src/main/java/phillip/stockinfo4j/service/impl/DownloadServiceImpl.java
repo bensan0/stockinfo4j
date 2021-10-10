@@ -11,17 +11,11 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveFailException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveStockDailyFailedException;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
-import phillip.stockinfo4j.repository.CorpDailyRepo;
-import phillip.stockinfo4j.repository.StockDailyRepo;
 import phillip.stockinfo4j.service.DownloadService;
 
 import java.io.IOException;
-import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,11 +51,10 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IOException
      * @throws ExecutionException
      * @throws InterruptedException
-     * @throws SaveFailException
      */
     @Async("executor")
     @Transactional
-    public void getDaily(String date) throws IOException, ExecutionException, InterruptedException, SaveFailException {
+    public void getDaily(String date) throws ExecutionException, InterruptedException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
         List<CorpDailyTran> corpDailyTrans = new LinkedList<>();
         CompletableFuture<List<StockDailyTran>> twseStockDailyFuture = applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
@@ -80,12 +73,9 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async("executor")
-    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws IOException {
-        String name = Thread.currentThread().getName();
-        System.out.println(name + ":getTWSEStockDaily 開始");
+    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) {
         String filePath = downloadTWSEStockDaily(date);
         List<StockDailyTran> tranList = filtTWSEStockDaily(filePath);
-        System.out.println(name + ":getTWSEStockDaily 結束");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -93,7 +83,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async("executor")
-    public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) throws IOException {
+    public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) {
         String name = Thread.currentThread().getName();
         System.out.println(name + ":getTWSECorpDaily開始");
         String filePath = downloadTWSECorpDaily(date);
@@ -106,12 +96,9 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async("executor")
-    public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) throws IOException {
-        String name = Thread.currentThread().getName();
-        System.out.println(name + ":getTPEXStockDaily 開始");
+    public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) {
         String filePath = downloadTPEXStockDaily(date);
         List<StockDailyTran> tranList = filtTPEXStockDaily(filePath);
-        System.out.println(name + ":getTPEXStockDaily 結束");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -119,12 +106,9 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async("executor")
-    public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) throws IOException {
-        String name = Thread.currentThread().getName();
-        System.out.println(name + ":getTPEXCorpDaily 開始");
+    public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) {
         String filePath = downloadTPEXCorpDaily(date);
         List<CorpDailyTran> tranList = filtTPEXCorpDaily(filePath);
-        System.out.println(name + ":getTPEXCorpDaily 結束");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -165,7 +149,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @throws IOException
      */
-    private List<StockDailyTran> filtTWSEStockDaily(String filePath) throws IOException {
+    private List<StockDailyTran> filtTWSEStockDaily(String filePath) {
         List<StockDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
@@ -175,7 +159,7 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[1]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = getDecimalFormat();
+        DecimalFormat df = DownloadUtils.getDecimalFormat();
         try {
             while (sc.hasNext()) {
                 StockDailyTran tran = new StockDailyTran();
@@ -191,14 +175,14 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setTradingVol(parseStrToDouble(split1[2].replace(",", "").trim()).intValue() / 1000);
-                tran.setDeal(parseStrToDouble(split1[3].replace(",", "").trim()).intValue());
-                tran.setOpening(parseStrToDouble(split1[5].replace(",", "").trim()));
-                tran.setHighest(parseStrToDouble(split1[6].replace(",", "").trim()));
-                tran.setLowest(parseStrToDouble(split1[7].replace(",", "").trim()));
-                tran.setClosing(parseStrToDouble(split1[8].replace(",", "").trim()));
+                tran.setTradingVol(DownloadUtils.parseStrToDouble(split1[2].replace(",", "").trim()).intValue() / 1000);
+                tran.setDeal(DownloadUtils.parseStrToDouble(split1[3].replace(",", "").trim()).intValue());
+                tran.setOpening(DownloadUtils.parseStrToDouble(split1[5].replace(",", "").trim()));
+                tran.setHighest(DownloadUtils.parseStrToDouble(split1[6].replace(",", "").trim()));
+                tran.setLowest(DownloadUtils.parseStrToDouble(split1[7].replace(",", "").trim()));
+                tran.setClosing(DownloadUtils.parseStrToDouble(split1[8].replace(",", "").trim()));
                 if (split1[9].equals("+") || split1[9].equals("-")) {
-                    tran.setFluc(parseStrToDouble(split1[9].trim() + split1[10].replace(",", "").trim()));
+                    tran.setFluc(DownloadUtils.parseStrToDouble(split1[9].trim() + split1[10].replace(",", "").trim()));
                     Double yesterdayClosing = tran.getClosing() - tran.getFluc();
                     Double flucPer = Double.parseDouble(df.format((tran.getFluc() * 100 / yesterdayClosing)));
                     tran.setFlucPer(flucPer);
@@ -209,10 +193,10 @@ public class DownloadServiceImpl implements DownloadService {
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 14, li + 1 + 22)));
                 tran.setCdUnion(tran.getCode() + tran.getDate());
-                tran.setPer(parseStrToDouble(split1[15]));
+                tran.setPer(DownloadUtils.parseStrToDouble(split1[15]));
                 tranList.add(tran);
             }
-            deleteFile(filePath);
+            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -255,7 +239,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<CorpDailyTran> filtTWSECorpDaily(String filePath) throws IOException {
+    private List<CorpDailyTran> filtTWSECorpDaily(String filePath) {
         List<CorpDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
@@ -281,19 +265,19 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setForeignInvestors(parseStrToInteger(split1[4].trim().replace(",", "")) / 1000);
-                tran.setForeignCorp(parseStrToInteger(split1[7].trim().replace(",", "")) / 1000);
-                tran.setInvestmentTrust(parseStrToInteger(split1[10].trim().replace(",", "")) / 1000);
-                tran.setDealer(parseStrToInteger(split1[11].trim().replace(",", "")) / 1000);
-                tran.setDealerSelf(parseStrToInteger(split1[14].trim().replace(",", "")) / 1000);
-                tran.setDealerHedge(parseStrToInteger(split1[17].trim().replace(",", "")) / 1000);
-                tran.setTotal(parseStrToInteger(split1[18].trim().replace(",", "")) / 1000);
+                tran.setForeignInvestors(DownloadUtils.parseStrToInteger(split1[4].trim().replace(",", "")) / 1000);
+                tran.setForeignCorp(DownloadUtils.parseStrToInteger(split1[7].trim().replace(",", "")) / 1000);
+                tran.setInvestmentTrust(DownloadUtils.parseStrToInteger(split1[10].trim().replace(",", "")) / 1000);
+                tran.setDealer(DownloadUtils.parseStrToInteger(split1[11].trim().replace(",", "")) / 1000);
+                tran.setDealerSelf(DownloadUtils.parseStrToInteger(split1[14].trim().replace(",", "")) / 1000);
+                tran.setDealerHedge(DownloadUtils.parseStrToInteger(split1[17].trim().replace(",", "")) / 1000);
+                tran.setTotal(DownloadUtils.parseStrToInteger(split1[18].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 13, li + 1 + 21)));
                 tran.setCdUnion(tran.getCode() + tran.getDate());
                 tranList.add(tran);
             }
-            deleteFile(filePath);
+            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -337,7 +321,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<StockDailyTran> filtTPEXStockDaily(String filePath) throws IOException {
+    private List<StockDailyTran> filtTPEXStockDaily(String filePath) {
         List<StockDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
@@ -348,7 +332,7 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[0]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = getDecimalFormat();
+        DecimalFormat df = DownloadUtils.getDecimalFormat();
         try {
             while (sc.hasNext()) {
                 StockDailyTran tran = new StockDailyTran();
@@ -367,21 +351,21 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setClosing(parseStrToDouble(split1[2].trim().replace(",", "")));
-                tran.setFluc(parseStrToDouble(split1[3].trim().replace(",", "")));
-                tran.setOpening(parseStrToDouble(split1[4].trim().replace(",", "")));
-                tran.setHighest(parseStrToDouble(split1[5].trim().replace(",", "")));
-                tran.setLowest(parseStrToDouble(split1[6].trim().replace(",", "")));
-                tran.setTradingVol(parseStrToInteger(split1[8].trim().replace(",", "")) / 1000);
-                tran.setDeal(parseStrToInteger(split1[10].trim().replace(",", "")));
+                tran.setClosing(DownloadUtils.parseStrToDouble(split1[2].trim().replace(",", "")));
+                tran.setFluc(DownloadUtils.parseStrToDouble(split1[3].trim().replace(",", "")));
+                tran.setOpening(DownloadUtils.parseStrToDouble(split1[4].trim().replace(",", "")));
+                tran.setHighest(DownloadUtils.parseStrToDouble(split1[5].trim().replace(",", "")));
+                tran.setLowest(DownloadUtils.parseStrToDouble(split1[6].trim().replace(",", "")));
+                tran.setTradingVol(DownloadUtils.parseStrToInteger(split1[8].trim().replace(",", "")) / 1000);
+                tran.setDeal(DownloadUtils.parseStrToInteger(split1[10].trim().replace(",", "")));
                 Double yesterdayClosing = tran.getClosing();
-                tran.setFlucPer(parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
+                tran.setFlucPer(DownloadUtils.parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
                 int li = filePath.lastIndexOf("/");
-                tran.setDate(parseStrToInteger(filePath.substring(li + 1 + 14, li + 1 + 22)));
+                tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 14, li + 1 + 22)));
                 tran.setCdUnion(tran.getCode() + tran.getDate());
                 tranList.add(tran);
             }
-            deleteFile(filePath);
+            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -424,7 +408,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<CorpDailyTran> filtTPEXCorpDaily(String filePath) throws IOException {
+    private List<CorpDailyTran> filtTPEXCorpDaily(String filePath) {
         List<CorpDailyTran> tranList = new LinkedList<>();
         String content = DownloadUtils.readFileToString(filePath, "big5");
         if (content.length() == 0) {
@@ -434,7 +418,7 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[1]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = getDecimalFormat();
+        DecimalFormat df = DownloadUtils.getDecimalFormat();
         try {
             while (sc.hasNext()) {
                 CorpDailyTran tran = new CorpDailyTran();
@@ -453,19 +437,19 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setForeignInvestors(parseStrToInteger(split1[4].trim().replace(",", "")) / 1000);
-                tran.setForeignCorp(parseStrToInteger(split1[7].trim().replace(",", "")) / 1000);
-                tran.setInvestmentTrust(parseStrToInteger(split1[13].trim().replace(",", "")) / 1000);
-                tran.setDealerSelf(parseStrToInteger(split1[16].trim().replace(",", "")) / 1000);
-                tran.setDealerHedge(parseStrToInteger(split1[19].trim().replace(",", "")) / 1000);
-                tran.setDealer(parseStrToInteger(split1[22].trim().replace(",", "")) / 1000);
-                tran.setTotal(parseStrToInteger(split1[23].trim().replace(",", "")) / 1000);
+                tran.setForeignInvestors(DownloadUtils.parseStrToInteger(split1[4].trim().replace(",", "")) / 1000);
+                tran.setForeignCorp(DownloadUtils.parseStrToInteger(split1[7].trim().replace(",", "")) / 1000);
+                tran.setInvestmentTrust(DownloadUtils.parseStrToInteger(split1[13].trim().replace(",", "")) / 1000);
+                tran.setDealerSelf(DownloadUtils.parseStrToInteger(split1[16].trim().replace(",", "")) / 1000);
+                tran.setDealerHedge(DownloadUtils.parseStrToInteger(split1[19].trim().replace(",", "")) / 1000);
+                tran.setDealer(DownloadUtils.parseStrToInteger(split1[22].trim().replace(",", "")) / 1000);
+                tran.setTotal(DownloadUtils.parseStrToInteger(split1[23].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
-                tran.setDate(parseStrToInteger(filePath.substring(li + 1 + 13, li + 1 + 21)));
+                tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 13, li + 1 + 21)));
                 tran.setCdUnion(tran.getCode() + tran.getDate());
                 tranList.add(tran);
             }
-            deleteFile(filePath);
+            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
         }
@@ -506,50 +490,4 @@ public class DownloadServiceImpl implements DownloadService {
 //        }
 //    }
 
-    /**
-     * @param str
-     * @return
-     */
-    private Double parseStrToDouble(String str) {
-        Double result;
-        try {
-            result = Double.parseDouble(str);
-        } catch (NumberFormatException e) {
-            return 0.00;
-        }
-        return result;
-    }
-
-    /**
-     * @param str
-     * @return
-     */
-    private Integer parseStrToInteger(String str) {
-        Integer result;
-        try {
-            result = Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-        return result;
-    }
-
-    /**
-     * @return
-     */
-    private DecimalFormat getDecimalFormat() {
-        DecimalFormat df = new DecimalFormat("############.00");
-        df.setRoundingMode(RoundingMode.DOWN);
-        return df;
-    }
-
-    /**
-     * 刪除檔案
-     *
-     * @param filePath
-     * @throws IOException
-     */
-    private void deleteFile(String filePath) throws IOException {
-        Files.deleteIfExists(Paths.get(filePath));
-    }
 }

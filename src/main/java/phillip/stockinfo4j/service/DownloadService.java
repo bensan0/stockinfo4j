@@ -12,13 +12,13 @@ public interface DownloadService {
 
     void getDaily(String date) throws IOException, ExecutionException, InterruptedException;
 
-    CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws IOException;
+    CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date);
 
-    CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) throws IOException;
+    CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date);
 
-    CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) throws IOException;
+    CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date);
 
-    CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) throws IOException;
+    CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date);
 
 
 }

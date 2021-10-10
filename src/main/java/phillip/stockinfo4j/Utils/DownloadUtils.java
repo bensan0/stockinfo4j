@@ -1,8 +1,14 @@
 package phillip.stockinfo4j.Utils;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
+import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
+
+import java.io.*;
+import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -18,25 +24,27 @@ public class DownloadUtils {
      * @return
      * @throws IOException
      */
-    public static String readFileToString(String filePath, String codec) throws IOException {
+    public static String readFileToString(String filePath, String codec) throws ReadFileException{
         StringBuffer sb;
         FileInputStream fis;
         InputStreamReader isr = null;
-        try {
-            sb = new StringBuffer();
-            fis = new FileInputStream(filePath);
-            isr = new InputStreamReader(fis, codec);
-            int i;
-            while ((i = isr.read()) != -1) {
-                sb.append((char) i);
+        try{
+            try {
+                sb = new StringBuffer();
+                fis = new FileInputStream(filePath);
+                isr = new InputStreamReader(fis, codec);
+                int i;
+                while ((i = isr.read()) != -1) {
+                    sb.append((char) i);
+                }
+                return sb.toString();
+            } finally {
+                isr.close();
             }
-            isr.close();
-            return sb.toString();
-        } catch (IOException e) {
-            throw e;
-        } finally {
-            isr.close();
+        }catch (IOException e){
+            throw new ReadFileException(ErrorEnum.FailedToReadFile, e.getMessage());
         }
+
     }
 
     /**
@@ -72,5 +80,56 @@ public class DownloadUtils {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 刪除檔案
+     *
+     * @param filePath
+     * @throws DeleteFileException
+     */
+    public static void deleteFile(String filePath) throws DeleteFileException {
+        try {
+            Files.deleteIfExists(Paths.get(filePath));
+        } catch (IOException e) {
+            throw new DeleteFileException(ErrorEnum.FailedToDeleteFile, e.getMessage());
+        }
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static Integer parseStrToInteger(String str) {
+        Integer result;
+        try {
+            result = Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+        return result;
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+   public static Double parseStrToDouble(String str) {
+        Double result;
+        try {
+            result = Double.parseDouble(str);
+        } catch (NumberFormatException e) {
+            return 0.00;
+        }
+        return result;
+    }
+
+    /**
+     * @return
+     */
+    public static DecimalFormat getDecimalFormat() {
+        DecimalFormat df = new DecimalFormat("############.00");
+        df.setRoundingMode(RoundingMode.DOWN);
+        return df;
     }
 }
