@@ -58,9 +58,9 @@ public class DownloadUtils {
         LocalDate localDate = LocalDate.parse(yyyyMMdd, formatter);
         DayOfWeek dow = localDate.getDayOfWeek();
         if (dow.equals(DayOfWeek.SATURDAY) || dow.equals(DayOfWeek.SUNDAY)) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**

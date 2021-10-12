@@ -14,6 +14,7 @@ import java.io.Serializable;
 @Component
 public class DownloaderResponse implements Serializable {
     private ErrorEnum errorMessage = ErrorEnum.Success;
-
+    private String code = errorMessage.getCode();
+    private String description = errorMessage.getDescription();
     private String errorDetail = "";
 }

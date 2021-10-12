@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class CorpDailyTran implements Serializable {
 
-    @Column(name = "id",unique = true, columnDefinition = "int not null UNIQUE key auto_increment")
+    @Column(name = "id",unique = true, columnDefinition = "int not null UNIQUE key auto_increment", updatable = false/*避免saveall資料重複時update報can not be null*/)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 

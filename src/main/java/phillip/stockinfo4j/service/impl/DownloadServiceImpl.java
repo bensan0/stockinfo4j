@@ -11,8 +11,13 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveStockDailyFailedException;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
+import phillip.stockinfo4j.model.pojo.Distribution;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
+import phillip.stockinfo4j.repository.CorpDailyRepo;
+import phillip.stockinfo4j.repository.StockDailyRepo;
 import phillip.stockinfo4j.service.DownloadService;
 
 import java.io.IOException;
@@ -35,11 +40,11 @@ public class DownloadServiceImpl implements DownloadService {
     @Autowired
     private RestTemplate restTemplate;
 
-//    @Autowired
-//    private StockDailyRepo stockDailyRepo;
-//
-//    @Autowired
-//    private CorpDailyRepo corpDailyRepo;
+    @Autowired
+    private StockDailyRepo stockDailyRepo;
+
+    @Autowired
+    private CorpDailyRepo corpDailyRepo;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -53,7 +58,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws InterruptedException
      */
     @Async("executor")
-    @Transactional
+//    @Transactional Async下標註@Transactional無效,需要在內部呼叫的方法上標註@Transactional
     public void getDaily(String date) throws ExecutionException, InterruptedException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
         List<CorpDailyTran> corpDailyTrans = new LinkedList<>();
@@ -61,12 +66,25 @@ public class DownloadServiceImpl implements DownloadService {
         CompletableFuture<List<CorpDailyTran>> twseCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTWSECorpDaily(date);
         CompletableFuture<List<StockDailyTran>> tpexStockDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXStockDaily(date);
         CompletableFuture<List<CorpDailyTran>> tpexCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXCorpDaily(date);
-        stockDailyTrans.addAll(twseStockDailyFuture.get());
-        stockDailyTrans.addAll(tpexStockDailyFuture.get());
-        corpDailyTrans.addAll(twseCorpDailyFuture.get());
-        corpDailyTrans.addAll(tpexCorpDailyFuture.get());
-//        saveStockDaily(stockDailyTrans);
-//        saveCorpDaily(corpDailyTrans);
+        try{
+            stockDailyTrans.addAll(twseStockDailyFuture.get());
+            stockDailyTrans.addAll(tpexStockDailyFuture.get());
+            corpDailyTrans.addAll(twseCorpDailyFuture.get());
+            corpDailyTrans.addAll(tpexCorpDailyFuture.get());
+        }catch(InterruptedException e){
+            System.out.println("錯誤:" + e.getMessage());
+            throw e;
+        }
+        saveStockDaily(stockDailyTrans);
+        saveCorpDaily(corpDailyTrans);
+    }
+
+    /**
+     * 下載並儲存當周股權分佈
+     */
+    @Async("executor")
+    public void getDistribution(){
+        downloadDistribution();
     }
 
     /**
@@ -192,7 +210,7 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 14, li + 1 + 22)));
-                tran.setCdUnion(tran.getCode() + tran.getDate());
+                tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tran.setPer(DownloadUtils.parseStrToDouble(split1[15]));
                 tranList.add(tran);
             }
@@ -274,7 +292,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setTotal(DownloadUtils.parseStrToInteger(split1[18].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 13, li + 1 + 21)));
-                tran.setCdUnion(tran.getCode() + tran.getDate());
+                tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
             DownloadUtils.deleteFile(filePath);
@@ -362,7 +380,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setFlucPer(DownloadUtils.parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 14, li + 1 + 22)));
-                tran.setCdUnion(tran.getCode() + tran.getDate());
+                tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
             DownloadUtils.deleteFile(filePath);
@@ -446,7 +464,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setTotal(DownloadUtils.parseStrToInteger(split1[23].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 13, li + 1 + 21)));
-                tran.setCdUnion(tran.getCode() + tran.getDate());
+                tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
             DownloadUtils.deleteFile(filePath);
@@ -463,17 +481,17 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-//    @Transactional(rollbackFor = Exception.class)
-//    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SaveStockDailyFailedException {
-//        System.out.println("儲存stockdaily開始");
-//        long l1 = System.currentTimeMillis();
-//        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
-//        long l2 = System.currentTimeMillis();
-//        System.out.println("儲存stockdaily結束,共花:" + (l1 - l2) + "豪秒");
-//        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
-//            throw new SaveStockDailyFailedException();
-//        }
-//    }
+    @Transactional(rollbackFor = Exception.class)
+    public void saveStockDaily(List<StockDailyTran> tranList) throws IllegalArgumentException, SaveStockDailyFailedException {
+        System.out.println("儲存stockdaily開始");
+        long l1 = System.currentTimeMillis();
+        List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
+        long l2 = System.currentTimeMillis();
+        System.out.println("儲存stockdaily結束,共花:" + (l1 - l2) + "豪秒");
+        if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
+            throw new SaveStockDailyFailedException();
+        }
+    }
 
     /**
      * 儲存每日法人交易
@@ -482,12 +500,78 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-//    @Transactional(rollbackFor = Exception.class)
-//    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, SaveCorpDailyFailedException {
-//        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
-//        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
-//            throw new SaveCorpDailyFailedException();
-//        }
-//    }
+    @Transactional(rollbackFor = Exception.class)
+    public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, SaveCorpDailyFailedException {
+        List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
+        if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
+            throw new SaveCorpDailyFailedException();
+        }
+    }
+
+
+
+    /**
+     * 下載集保所股權分佈
+     * @return
+     */
+    private String downloadDistribution(){
+        String targetDir = resource.getString("TempDir");
+        String fileName = "Distribution.csv";
+        String url = resource.getString("DistributionUrl");
+
+        //定義請求頭的接收類型
+        RequestCallback requestCallback = request -> {
+            request.getHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
+        };
+        // getForObject會將所有返回直接放到內存中,使用流來替代這個操作
+        ResponseExtractor<Void> responseExtractor = response -> {
+            // Here I write the response to a file but do what you like
+            Path path = Paths.get(targetDir);
+            if (!Files.exists(path)) {
+                Files.createDirectory(path);
+            }
+            Files.copy(response.getBody(), Paths.get(targetDir + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
+            return null;
+        };
+        restTemplate.execute(url, HttpMethod.GET, requestCallback, responseExtractor);
+        return targetDir + "/" + fileName;
+    }
+
+    /**
+     * 轉換為pojo
+     * @param filePath
+     * @return
+     */
+    private List<Distribution> filtDistribution(String filePath){
+        List<Distribution> tranList = new LinkedList<>();
+        String content = DownloadUtils.readFileToString(filePath, "utf-8");
+        if (content.length() == 0) {
+            return tranList;
+        }
+        String[] split = content.split("占集保庫存數比例%");
+        Scanner sc = new Scanner(split[1]);
+        sc.useDelimiter("\n");
+        sc.useDelimiter("\r\n");
+        DecimalFormat df = DownloadUtils.getDecimalFormat();
+        try {
+            while (sc.hasNext()) {
+                Distribution tran = new Distribution();
+
+                content = sc.next();
+                if (content.length() == 0) {
+                    continue;
+                }
+                String[] split1 = content.split(",");
+                if (split1[0].trim().length() > 4) {
+                    continue;
+                }
+            }
+            DownloadUtils.deleteFile(filePath);
+        } finally {
+            sc.close();
+        }
+        return null;
+    }
+
 
 }

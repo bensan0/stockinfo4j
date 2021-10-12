@@ -14,7 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class StockDailyTran implements Serializable {
 
-    @Column(name = "id",unique = true, columnDefinition = "int not null UNIQUE key auto_increment")
+    @Column(name = "id",unique = true, columnDefinition = "int not null UNIQUE key auto_increment",  updatable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
