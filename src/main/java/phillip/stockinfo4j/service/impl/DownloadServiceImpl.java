@@ -81,10 +81,13 @@ public class DownloadServiceImpl implements DownloadService {
 
     /**
      * 下載並儲存當周股權分佈
+     * @return
      */
     @Async("executor")
-    public void getDistribution(){
-        downloadDistribution();
+    public void getTWCCDistribution(){
+//        String filePath = downloadDistribution();
+//        List<Distribution> distributionList = filtDistribution(filePath);
+        filtDistribution("temp/Distribution.csv");
     }
 
     /**
@@ -102,11 +105,8 @@ public class DownloadServiceImpl implements DownloadService {
      */
     @Async("executor")
     public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) {
-        String name = Thread.currentThread().getName();
-        System.out.println(name + ":getTWSECorpDaily開始");
         String filePath = downloadTWSECorpDaily(date);
         List<CorpDailyTran> tranList = filtTWSECorpDaily(filePath);
-        System.out.println(name + ":getTWSECorpDaily結束");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -552,21 +552,49 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[1]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = DownloadUtils.getDecimalFormat();
+        Distribution tran = new Distribution();
         try {
+            int rate = 0;
             while (sc.hasNext()) {
-                Distribution tran = new Distribution();
-
                 content = sc.next();
                 if (content.length() == 0) {
                     continue;
                 }
                 String[] split1 = content.split(",");
-                if (split1[0].trim().length() > 4) {
+                if (split1[1].trim().length() > 4) {
                     continue;
                 }
+                rate = DownloadUtils.parseStrToInteger(split1[2]);
+                switch (rate){
+                    case 11:
+                        tran.setCode(split1[1]);
+                        tran.setDate(DownloadUtils.parseStrToInteger(split1[0]));
+                        tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
+                        tran.setRate11(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                    case 12:
+                        tran.setRate12(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        break;
+                    case 13:
+                        tran.setRate13(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        break;
+                    case 14:
+                        tran.setRate14(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        break;
+                    case 15:
+                        tran.setRate15(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        break;
+                    case 17:
+                        tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tranList.add(tran);
+                        System.out.println("分布:" + tran);
+                        tran = new Distribution();
+                        break;
+                    default:
+                        continue;
+                }
             }
-            DownloadUtils.deleteFile(filePath);
+//            DownloadUtils.deleteFile(filePath);
+            System.out.println(tranList);
         } finally {
             sc.close();
         }

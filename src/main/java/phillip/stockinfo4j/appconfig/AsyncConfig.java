@@ -9,7 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 
 @Configuration
-@EnableAsync(proxyTargetClass = true, mode = AdviceMode.ASPECTJ)
+@EnableAsync(proxyTargetClass = true /*mode = AdviceMode.ASPECTJ*/)
 /*
 * 在写SpringBoot单元测试中，需要mock一个Bean的一个方法，但是该方法有@Async注解。不管怎么写Mock方法，都会在Mock校验的时候报错，提示该方法无法被Mock。
 在经过大量搜索后，有两种解决方案：

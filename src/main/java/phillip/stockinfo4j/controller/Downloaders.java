@@ -42,7 +42,7 @@ public class Downloaders {
 
     @GetMapping("distribution")
     public void getDistribution(){
-        downloadService.getDistribution();
+        downloadService.getTWCCDistribution();
     }
 
 

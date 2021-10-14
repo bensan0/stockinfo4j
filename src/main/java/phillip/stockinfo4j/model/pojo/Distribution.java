@@ -20,6 +20,9 @@ public class Distribution {
     @Column(name = "code",nullable = false, length = 8)
     private String code;
 
+    @Column(name = "rate11", nullable = false)
+    private String rate11;
+
     @Column(name = "rate12",nullable = false)
     private String rate12;
 

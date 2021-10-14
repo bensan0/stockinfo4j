@@ -12,7 +12,7 @@ public interface DownloadService {
 
     void getDaily(String date) throws IOException, ExecutionException, InterruptedException;
 
-    void getDistribution();
+    void getTWCCDistribution();
 
     CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date);
 
