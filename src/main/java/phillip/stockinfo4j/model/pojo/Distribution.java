@@ -5,15 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "ownership_distribution",indexes = {@Index(columnList = "code")})
-public class Distribution {
+public class Distribution implements Serializable {
 
-    @Column(name = "id",unique = true, columnDefinition = "int not null UNIQUE key auto_increment")
+    @Column(name = "id",unique = true,updatable = false, columnDefinition = "int not null UNIQUE key auto_increment")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 

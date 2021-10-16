@@ -5,8 +5,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
-import phillip.stockinfo4j.service.DownloadService;
+import phillip.stockinfo4j.model.dto.DownloaderRes;
 
+import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
 
 /**
@@ -28,5 +29,10 @@ public class BeanConfig {
     public ResourceBundle resource(){
         ResourceBundle resource = ResourceBundle.getBundle("setting");//test為屬性檔名，放在包com.mmq下，如果是放在src下，直接用test即可
         return resource;
+    }
+
+    @Bean(name = "yyyyMMddFormatter")
+    public SimpleDateFormat simpleDateFormat(){
+        return new SimpleDateFormat("yyyyMMdd");
     }
 }

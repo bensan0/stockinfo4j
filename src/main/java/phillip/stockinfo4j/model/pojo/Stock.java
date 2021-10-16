@@ -3,10 +3,20 @@ package phillip.stockinfo4j.model.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import phillip.stockinfo4j.model.dto.FiltStockDailyDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
+@SqlResultSetMapping(name = "DTOResult", classes = {
+        @ConstructorResult(
+                targetClass = FiltStockDailyDTO.class,
+                columns = {
+                        @ColumnResult(name = "code", type = String.class),
+                        @ColumnResult(name = "name", type = String.class),
+                        @ColumnResult(name = "industry", type = String.class)
+                })
+})
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

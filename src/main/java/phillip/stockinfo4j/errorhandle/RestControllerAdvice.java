@@ -6,30 +6,30 @@ import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.errorhandle.exceptions.CustomRuntimeException;
 import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
 import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
-import phillip.stockinfo4j.model.dto.DownloaderResponse;
+import phillip.stockinfo4j.model.dto.DownloaderRes;
 
 @org.springframework.web.bind.annotation.RestControllerAdvice
 public class RestControllerAdvice {
 
     @Autowired
-    DownloaderResponse resp;
+    DownloaderRes resp;
 
-    @ExceptionHandler(Exception.class)
-    public DownloaderResponse handleException(Exception e) {
-        resp.setErrorMessage(ErrorEnum.UnDefinedException);
-        resp.setErrorDetail(e.getMessage());
-        return resp;
-    }
+//    @ExceptionHandler(Exception.class)
+//    public DownloaderRes handleException(Exception e) {
+//        resp.setErrorMessage(ErrorEnum.UnDefinedException);
+//        resp.setErrorDetail(e.getMessage());
+//        return resp;
+//    }
 
-    @ExceptionHandler(RuntimeException.class)
-    public DownloaderResponse handleRuntimeException(RuntimeException e){
-        resp.setErrorMessage(ErrorEnum.UDefinedRuntimeException);
-        resp.setErrorDetail(e.getMessage());
-        return resp;
-    }
+//    @ExceptionHandler(RuntimeException.class)
+//    public DownloaderRes handleRuntimeException(RuntimeException e){
+//        resp.setErrorMessage(ErrorEnum.UDefinedRuntimeException);
+//        resp.setErrorDetail(e.getMessage());
+//        return resp;
+//    }
 
     @ExceptionHandler({ReadFileException.class, DeleteFileException.class})
-    public DownloaderResponse handleCustomRuntimeException(CustomRuntimeException e) {
+    public DownloaderRes handleCustomRuntimeException(CustomRuntimeException e) {
         resp.setErrorMessage(e.getErrorEnum());
         resp.setErrorDetail(e.getOriginalMsg());
         return resp;

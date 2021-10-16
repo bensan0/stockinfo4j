@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
-import phillip.stockinfo4j.model.dto.DownloaderResponse;
+import phillip.stockinfo4j.model.dto.DownloaderRes;
 import phillip.stockinfo4j.service.DownloadService;
 
+import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
@@ -23,16 +24,18 @@ public class Downloaders {
     @Autowired
     DownloadService downloadService;
 
+    @Autowired
+    DownloaderRes resp;
+
     /**
      * 下載每日上市櫃股票交易資訊(含法人)
      *
      * @param yyyyMMdd
      */
     @GetMapping("/daily")
-    public DownloaderResponse getStockDaily(@RequestParam("date") String yyyyMMdd) throws IOException, ExecutionException, InterruptedException {
+    public DownloaderRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws IOException, ExecutionException, InterruptedException {
         DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
         DownloadUtils.isDateConform(yyyyMMdd);
-        DownloaderResponse resp = new DownloaderResponse();
         if (!DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd) || !DownloadUtils.isDateConform(yyyyMMdd)) {
             resp.setErrorMessage(ErrorEnum.DateFormatNotAllowed);
         }
@@ -41,13 +44,14 @@ public class Downloaders {
     }
 
     @GetMapping("distribution")
-    public void getDistribution(){
+    public DownloaderRes getDistribution(){
         downloadService.getTWCCDistribution();
+        return resp;
     }
 
 
     @GetMapping("/testAdvice")
-    public DownloaderResponse getEx() throws InterruptedException {
+    public DownloaderRes getEx() throws InterruptedException {
         throw new InterruptedException("測試Inte");
     }
 

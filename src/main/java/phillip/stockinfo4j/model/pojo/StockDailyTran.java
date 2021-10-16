@@ -57,4 +57,5 @@ public class StockDailyTran implements Serializable {
 
     @Column(name = "per")
     private Double per = 0.00;//本益比
+
 }

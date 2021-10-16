@@ -17,6 +17,7 @@ import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.Distribution;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
+import phillip.stockinfo4j.repository.DistributionRepo;
 import phillip.stockinfo4j.repository.StockDailyRepo;
 import phillip.stockinfo4j.service.DownloadService;
 
@@ -45,6 +46,9 @@ public class DownloadServiceImpl implements DownloadService {
 
     @Autowired
     private CorpDailyRepo corpDailyRepo;
+
+    @Autowired
+    private DistributionRepo distributionRepo;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -83,11 +87,10 @@ public class DownloadServiceImpl implements DownloadService {
      * 下載並儲存當周股權分佈
      * @return
      */
-    @Async("executor")
     public void getTWCCDistribution(){
-//        String filePath = downloadDistribution();
-//        List<Distribution> distributionList = filtDistribution(filePath);
-        filtDistribution("temp/Distribution.csv");
+        String filePath = downloadDistribution();
+        List<Distribution> distributionList = filtDistribution(filePath);
+        saveDistribution(distributionList);
     }
 
     /**
@@ -214,9 +217,9 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setPer(DownloadUtils.parseStrToDouble(split1[15]));
                 tranList.add(tran);
             }
-            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
+            DownloadUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -295,9 +298,9 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
-            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
+            DownloadUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -383,9 +386,9 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
-            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
+            DownloadUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -467,9 +470,9 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
-            DownloadUtils.deleteFile(filePath);
         } finally {
             sc.close();
+            DownloadUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -487,7 +490,7 @@ public class DownloadServiceImpl implements DownloadService {
         long l1 = System.currentTimeMillis();
         List<StockDailyTran> stockDailyTrans = stockDailyRepo.saveAll(tranList);
         long l2 = System.currentTimeMillis();
-        System.out.println("儲存stockdaily結束,共花:" + (l1 - l2) + "豪秒");
+        System.out.println("儲存stockdaily結束,共花:" + (l2 - l1) + "豪秒");
         if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
             throw new SaveStockDailyFailedException();
         }
@@ -502,7 +505,11 @@ public class DownloadServiceImpl implements DownloadService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void saveCorpDaily(List<CorpDailyTran> tranList) throws IllegalArgumentException, SaveCorpDailyFailedException {
+        System.out.println("儲存corpdaily開始");
+        long l1 = System.currentTimeMillis();
         List<CorpDailyTran> corpDailyTrans = corpDailyRepo.saveAll(tranList);
+        long l2 = System.currentTimeMillis();
+        System.out.println("儲存corpdaily結束,共花:" + (l2 - l1) + "豪秒");
         if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
             throw new SaveCorpDailyFailedException();
         }
@@ -586,19 +593,29 @@ public class DownloadServiceImpl implements DownloadService {
                     case 17:
                         tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
                         tranList.add(tran);
-                        System.out.println("分布:" + tran);
                         tran = new Distribution();
                         break;
                     default:
                         continue;
                 }
             }
-//            DownloadUtils.deleteFile(filePath);
-            System.out.println(tranList);
         } finally {
             sc.close();
+            DownloadUtils.deleteFile(filePath);
         }
-        return null;
+        return tranList;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void saveDistribution(List<Distribution> distributionList){
+        System.out.println("儲存distribution開始");
+        long l1 = System.currentTimeMillis();
+        distributionList = distributionRepo.saveAll(distributionList);
+        long l2 = System.currentTimeMillis();
+        System.out.println("儲存corpdaily結束,共花:" + (l2 - l1) + "豪秒");
+        if (distributionList.size() == 0 || distributionList == null) {
+            throw new SaveCorpDailyFailedException();
+        }
     }
 
 
