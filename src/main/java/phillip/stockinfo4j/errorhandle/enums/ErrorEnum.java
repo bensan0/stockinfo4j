@@ -1,7 +1,9 @@
 package phillip.stockinfo4j.errorhandle.enums;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import phillip.stockinfo4j.errorhandle.IBaseErrorInfo;
 
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ErrorEnum implements IBaseErrorInfo {
     Success("0000", "成功"),
     FailedToReadFile("0001", "讀取檔案失敗"),

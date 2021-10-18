@@ -25,7 +25,7 @@ public class StockDailyTran implements Serializable {
     private String name;
 
     @Column(name = "trading_vol",nullable = false)
-    private Integer tradingVol = 0;//成交股數
+    private Integer tradingVol = 0;//成交張數
 
     @Column(name = "deal",nullable = false)
     private Integer deal = 0;//成交筆數

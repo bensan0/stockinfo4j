@@ -15,21 +15,21 @@ public class FiltStockDailyReq implements Serializable {
 
     private String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-    private Double flucPercentLL = 0.40;
+    private Double tradingVolFlucPercentLL = 0.40;//今交易量>昨% 下限
 
-    private Double flucPercentUL = 10000.00;
+    private Double tradingVolFlucPercentUL = 10000.00;//今交易量>昨% 上限
 
-    private Integer yesterdayTradingVolLL = 3000;
+    private Integer yesterdayTradingVolLL = 3000;//昨交易量下限
 
-    private Integer yesterdayTradingVolUL = 100000;
+    private Integer yesterdayTradingVolUL = 100000;//昨交易量上限
 
-    private Double todayClosingUL = 40.00;
+    private Double todayClosingUL = 40.00;//今日收盤價上限
 
     public void setDate(String date) {
         if (date == null || date.trim().length() != 8) {
         } else {
             try {
-                int dateInt = Integer.parseInt(date);
+                Integer.parseInt(date);
                 this.date = date;
             } catch (NumberFormatException e) {
             }
@@ -37,11 +37,11 @@ public class FiltStockDailyReq implements Serializable {
 
     }
 
-    public void setFlucPercentLL(Double flucPercentLL) {
-        this.flucPercentLL = flucPercentLL / 100;
+    public void setTradingVolFlucPercentLL(Double tradingVolFlucPercentLL) {
+        this.tradingVolFlucPercentLL = tradingVolFlucPercentLL / 100;
     }
 
-    public void setFlucPercentUL(Double flucPercentUL) {
-        this.flucPercentUL = flucPercentUL / 100;
+    public void setTradingVolFlucPercentUL(Double tradingVolFlucPercentUL) {
+        this.tradingVolFlucPercentUL = tradingVolFlucPercentUL / 100;
     }
 }

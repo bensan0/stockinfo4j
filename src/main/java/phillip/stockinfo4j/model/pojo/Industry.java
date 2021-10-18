@@ -3,7 +3,6 @@ package phillip.stockinfo4j.model.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import phillip.stockinfo4j.model.dto.FiltStockDailyDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;

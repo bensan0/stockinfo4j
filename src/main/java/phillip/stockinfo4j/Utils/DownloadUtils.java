@@ -1,6 +1,7 @@
 package phillip.stockinfo4j.Utils;
 
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.exceptions.DateParseException;
 import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
 import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
 
@@ -52,12 +53,17 @@ public class DownloadUtils {
      *
      * @param yyyyMMdd
      * @return
+     * @throws DateParseException
      */
-    public static boolean isDateSaturdayOrSunday(String yyyyMMdd) throws DateTimeParseException {
+    public static boolean isDateSaturdayOrSunday(String yyyyMMdd) throws DateParseException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate localDate = LocalDate.parse(yyyyMMdd, formatter);
-        DayOfWeek dow = localDate.getDayOfWeek();
-        if (dow.equals(DayOfWeek.SATURDAY) || dow.equals(DayOfWeek.SUNDAY)) {
+        LocalDate localDate;
+        try{
+            localDate = LocalDate.parse(yyyyMMdd,formatter);
+        }catch (DateTimeParseException e){
+            throw new DateParseException(ErrorEnum.DateFormatNotAllowed, e.getMessage());
+        }
+        if(localDate.getDayOfWeek()==DayOfWeek.SUNDAY||localDate.getDayOfWeek()==DayOfWeek.SATURDAY){
             return false;
         }
         return true;
@@ -68,14 +74,21 @@ public class DownloadUtils {
      *
      * @param yyyyMMdd
      * @return
-     * @throws DateTimeParseException
+     * @throws DateParseException
      */
-    public static boolean isDateConform(String yyyyMMdd) throws NumberFormatException {
+    public static boolean isDateConform(String yyyyMMdd) throws DateParseException {
         if (yyyyMMdd.trim().length() != 8) {
             return false;
         }
-        Integer month = Integer.parseInt(yyyyMMdd.substring(4, 6));
-        Integer day = Integer.parseInt(yyyyMMdd.substring(6, 8));
+        Integer month;
+        Integer day;
+        try{
+            month = Integer.parseInt(yyyyMMdd.substring(4, 6));
+            day = Integer.parseInt(yyyyMMdd.substring(6, 8));
+        }catch (NumberFormatException e){
+            throw new DateParseException(ErrorEnum.DateFormatNotAllowed, e.getMessage());
+        }
+
         if (month > 12 || day > 31) {
             return false;
         }
