@@ -61,22 +61,27 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    @Async("executor")
+    @Async
 //    @Transactional Async下標註@Transactional無效,需要在內部呼叫的方法上標註@Transactional
     public void getDaily(String date) throws ExecutionException, InterruptedException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
         List<CorpDailyTran> corpDailyTrans = new LinkedList<>();
-        CompletableFuture<List<StockDailyTran>> twseStockDailyFuture = applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
-        CompletableFuture<List<CorpDailyTran>> twseCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTWSECorpDaily(date);
-        CompletableFuture<List<StockDailyTran>> tpexStockDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXStockDaily(date);
-        CompletableFuture<List<CorpDailyTran>> tpexCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXCorpDaily(date);
-        try{
+        CompletableFuture<List<StockDailyTran>> twseStockDailyFuture;
+        CompletableFuture<List<CorpDailyTran>> twseCorpDailyFuture;
+        CompletableFuture<List<StockDailyTran>> tpexStockDailyFuture;
+        CompletableFuture<List<CorpDailyTran>> tpexCorpDailyFuture;
+        twseStockDailyFuture = applicationContext.getBean(DownloadService.class).getTWSEStockDaily(date);
+        twseCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTWSECorpDaily(date);
+        tpexStockDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXStockDaily(date);
+        tpexCorpDailyFuture = applicationContext.getBean(DownloadService.class).getTPEXCorpDaily(date);
+        try {
             stockDailyTrans.addAll(twseStockDailyFuture.get());
             stockDailyTrans.addAll(tpexStockDailyFuture.get());
             corpDailyTrans.addAll(twseCorpDailyFuture.get());
             corpDailyTrans.addAll(tpexCorpDailyFuture.get());
-        }catch(InterruptedException e){
-            System.out.println("錯誤:" + e.getMessage());
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (ExecutionException e) {
             throw e;
         }
         saveStockDaily(stockDailyTrans);
@@ -85,9 +90,10 @@ public class DownloadServiceImpl implements DownloadService {
 
     /**
      * 下載並儲存當周股權分佈
+     *
      * @return
      */
-    public void getTWCCDistribution(){
+    public void getTWCCDistribution() {
         String filePath = downloadDistribution();
         List<Distribution> distributionList = filtDistribution(filePath);
         saveDistribution(distributionList);
@@ -96,7 +102,7 @@ public class DownloadServiceImpl implements DownloadService {
     /**
      * @param date
      */
-    @Async("executor")
+    @Async
     public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) {
         String filePath = downloadTWSEStockDaily(date);
         List<StockDailyTran> tranList = filtTWSEStockDaily(filePath);
@@ -106,7 +112,7 @@ public class DownloadServiceImpl implements DownloadService {
     /**
      * @param date
      */
-    @Async("executor")
+    @Async
     public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) {
         String filePath = downloadTWSECorpDaily(date);
         List<CorpDailyTran> tranList = filtTWSECorpDaily(filePath);
@@ -116,7 +122,7 @@ public class DownloadServiceImpl implements DownloadService {
     /**
      * @param date
      */
-    @Async("executor")
+    @Async
     public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) {
         String filePath = downloadTPEXStockDaily(date);
         List<StockDailyTran> tranList = filtTPEXStockDaily(filePath);
@@ -126,7 +132,7 @@ public class DownloadServiceImpl implements DownloadService {
     /**
      * @param date
      */
-    @Async("executor")
+    @Async
     public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) {
         String filePath = downloadTPEXCorpDaily(date);
         List<CorpDailyTran> tranList = filtTPEXCorpDaily(filePath);
@@ -350,6 +356,7 @@ public class DownloadServiceImpl implements DownloadService {
         }
         String[] split = content.split("次日跌停價");
         split = split[1].split("管理股票");
+
         Scanner sc = new Scanner(split[0]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
@@ -439,7 +446,6 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[1]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = DownloadUtils.getDecimalFormat();
         try {
             while (sc.hasNext()) {
                 CorpDailyTran tran = new CorpDailyTran();
@@ -516,12 +522,12 @@ public class DownloadServiceImpl implements DownloadService {
     }
 
 
-
     /**
      * 下載集保所股權分佈
+     *
      * @return
      */
-    private String downloadDistribution(){
+    private String downloadDistribution() {
         String targetDir = resource.getString("TempDir");
         String fileName = "Distribution.csv";
         String url = resource.getString("DistributionUrl");
@@ -546,10 +552,11 @@ public class DownloadServiceImpl implements DownloadService {
 
     /**
      * 轉換為pojo
+     *
      * @param filePath
      * @return
      */
-    private List<Distribution> filtDistribution(String filePath){
+    private List<Distribution> filtDistribution(String filePath) {
         List<Distribution> tranList = new LinkedList<>();
         String content = DownloadUtils.readFileToString(filePath, "utf-8");
         if (content.length() == 0) {
@@ -572,26 +579,26 @@ public class DownloadServiceImpl implements DownloadService {
                     continue;
                 }
                 rate = DownloadUtils.parseStrToInteger(split1[2]);
-                switch (rate){
+                switch (rate) {
                     case 11:
                         tran.setCode(split1[1]);
                         tran.setDate(DownloadUtils.parseStrToInteger(split1[0]));
                         tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
-                        tran.setRate11(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tran.setRate11(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
                     case 12:
-                        tran.setRate12(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tran.setRate12(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 13:
-                        tran.setRate13(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tran.setRate13(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 14:
-                        tran.setRate14(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tran.setRate14(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 15:
-                        tran.setRate15(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tran.setRate15(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 17:
-                        tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4])/1000 + "/" + split1[5]);
+                        tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
                         tranList.add(tran);
                         tran = new Distribution();
                         break;
@@ -607,7 +614,7 @@ public class DownloadServiceImpl implements DownloadService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveDistribution(List<Distribution> distributionList){
+    public void saveDistribution(List<Distribution> distributionList) {
         System.out.println("儲存distribution開始");
         long l1 = System.currentTimeMillis();
         distributionList = distributionRepo.saveAll(distributionList);

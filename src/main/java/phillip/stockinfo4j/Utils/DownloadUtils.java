@@ -145,4 +145,14 @@ public class DownloadUtils {
         df.setRoundingMode(RoundingMode.DOWN);
         return df;
     }
+
+    /**
+     *
+     * @param pattern
+     * @return
+     */
+    public static DateTimeFormatter getDateTimeFormatter(String pattern){
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern(pattern);
+        return fmt;
+    }
 }

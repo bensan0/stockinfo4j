@@ -3,10 +3,13 @@ package phillip.stockinfo4j.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.model.dto.*;
+import phillip.stockinfo4j.model.dto.FiltStockDailyDTO;
+import phillip.stockinfo4j.model.dto.FiltStockDailyReq;
+import phillip.stockinfo4j.model.dto.StockIndustryDTO;
+import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
+import phillip.stockinfo4j.repository.CorpDailyRepo;
 import phillip.stockinfo4j.repository.StockDailyRepo;
-import phillip.stockinfo4j.repository.StockRepo;
 import phillip.stockinfo4j.service.SearchService;
 
 import javax.persistence.EntityManager;
@@ -24,14 +27,21 @@ public class SearchServiceImpl implements SearchService {
     StockDailyRepo stockDailyRepo;
 
     @Autowired
-    StockRepo stockRepo;
+    CorpDailyRepo corpDailyRepo;
 
     @PersistenceContext
     EntityManager em;
 
-    public List<FiltStockDailyDTO> findStockDailyByDate(FiltStockDailyReq req) {
+    /**
+     * 篩選特定條件
+     *
+     * @param req
+     * @return
+     */
+    public List<FiltStockDailyDTO> filtStockDaily(FiltStockDailyReq req) {
         //尋找輸入日期的上個交易日
         String date = req.getDate();
+        System.out.println("date:" + date);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate today = LocalDate.parse(date, fmt);
         LocalDate yesterday = today.minusDays(1);
@@ -63,11 +73,17 @@ public class SearchServiceImpl implements SearchService {
         List<String> codeList = new ArrayList<>();
         todayMap.forEach((code, todayTran) -> {
             StockDailyTran yesterdayTran = yesterdayMap.get(code);
+            if (yesterdayTran == null) {
+                return;
+            }
             boolean isTVLLConfirm = todayTran.getTradingVol().doubleValue() >= yesterdayTran.getTradingVol().doubleValue() * (1.00 + req.getTradingVolFlucPercentLL());
             boolean isTVULConfirm = todayTran.getTradingVol().doubleValue() <= yesterdayTran.getTradingVol().doubleValue() * req.getTradingVolFlucPercentUL();
             boolean isYTVLLConfirm = yesterdayTran.getTradingVol() >= req.getYesterdayTradingVolLL();
             boolean isYTVULConfirm = yesterdayTran.getTradingVol() <= req.getYesterdayTradingVolUL();
             boolean isTCULConfirm = todayTran.getClosing() <= req.getTodayClosingUL();
+            if (code.equals("1708")) {
+                System.out.println(isTVLLConfirm + "," + isTVULConfirm + "," + isYTVLLConfirm + "," + isYTVULConfirm + "," + isTCULConfirm);
+            }
             if (isTCULConfirm && isTVLLConfirm && isTVULConfirm && isYTVULConfirm && isYTVLLConfirm) {
                 codeList.add(todayTran.getCode());
             }
@@ -75,40 +91,77 @@ public class SearchServiceImpl implements SearchService {
 
         //利用code查詢出DTO(含code,name,業種)
         List<StockIndustryDTO> dtoList;
-        try{
+        try {
             String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList";
             Query query = em.createNativeQuery(qstr, "DTOResult").setParameter("codeList", codeList);
             dtoList = query.getResultList();
-        }finally {
+        } finally {
             em.close();
         }
 
         //DTO填入今昨交易
         List<FiltStockDailyDTO> resultList = new ArrayList<>();
-        for(StockIndustryDTO dto: dtoList){
-           FiltStockDailyDTO filtDTO = new FiltStockDailyDTO(dto);
-           filtDTO.getTranList().add(todayMap.get(dto.getCode()));
-           filtDTO.getTranList().add(yesterdayMap.get(dto.getCode()));
-           resultList.add(filtDTO);
+        for (StockIndustryDTO dto : dtoList) {
+            FiltStockDailyDTO filtDTO = new FiltStockDailyDTO(dto);
+            filtDTO.getTranList().add(todayMap.get(dto.getCode()));
+            filtDTO.getTranList().add(yesterdayMap.get(dto.getCode()));
+            resultList.add(filtDTO);
         }
         //回傳List<DTO>
         return resultList;
     }
 
+    /**
+     * 獲取天數個股交易
+     *
+     * @param days
+     * @param code
+     * @return
+     */
+    public List<StockDailyTran> getDaysStock(Integer days, String code) {
+        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        LocalDate today = LocalDate.now();
+        Set<Integer> dates = new HashSet<>();
+        dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
+        LocalDate yesterday = today.minusDays(1);
+        while (true) {
+            if (dates.size() == days) {
+                break;
+            }
+            if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY || yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                continue;
+            }
+            dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
+            yesterday = yesterday.minusDays(1);
+        }
+
+        List<StockDailyTran> resultList = stockDailyRepo.findByDatesAndCode(dates, code);
+        return resultList;
+    }
+
+    public List<CorpDailyTran> getDaysCorp(Integer days, String code) {
+        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        LocalDate today = LocalDate.now();
+        Set<Integer> dates = new HashSet<>();
+        dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
+        LocalDate yesterday = today.minusDays(1);
+        while (true) {
+            if (dates.size() == days) {
+                break;
+            }
+            if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY || yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                continue;
+            }
+            dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
+            yesterday = yesterday.minusDays(1);
+        }
+
+        List<CorpDailyTran> resultList = corpDailyRepo.findByDatesAndCode(dates, code);
+        return resultList;
+    }
+
     public void test() {
-        List<String> codeList = new ArrayList<>();
-        codeList.add("0050");
-        codeList.add("0051");
-        codeList.add("6477");
-        List<StockIndustryDTO> list = new ArrayList<>();
-        Query query = null;
-        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList";
-        query = em.createNativeQuery(qstr, "DTOResult");
-        query.setParameter("codeList", codeList);
-        List<StockIndustryDTO> li = query.getResultList();
-        System.out.println("我肏");
-        System.out.println(li);
-        em.close();
+
     }
 
     public static void main(String[] args) {

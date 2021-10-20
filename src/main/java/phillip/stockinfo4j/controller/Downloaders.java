@@ -29,7 +29,7 @@ public class Downloaders {
      * @param yyyyMMdd
      */
     @GetMapping("/daily")
-    public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws IOException, ExecutionException, InterruptedException {
+    public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws Exception {
         BasicRes resp = new BasicRes();
         DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
         DownloadUtils.isDateConform(yyyyMMdd);
@@ -41,7 +41,7 @@ public class Downloaders {
     }
 
     @GetMapping("distribution")
-    public BasicRes getDistribution() {
+    public BasicRes getDistribution() throws RuntimeException{
         BasicRes resp = new BasicRes();
         downloadService.getTWCCDistribution();
         return resp;

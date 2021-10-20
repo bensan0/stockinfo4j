@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 
 public interface DownloadService {
 
-    void getDaily(String date) throws IOException, ExecutionException, InterruptedException;
+    void getDaily(String date) throws IOException, ExecutionException, InterruptedException, Exception;
 
     void getTWCCDistribution();
 
