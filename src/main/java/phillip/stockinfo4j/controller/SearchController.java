@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.model.dto.BasicRes;
+import phillip.stockinfo4j.model.dto.DistributionDTO;
 import phillip.stockinfo4j.model.dto.FiltStockDailyReq;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
+import phillip.stockinfo4j.model.pojo.Distribution;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.service.impl.SearchServiceImpl;
 
@@ -33,7 +35,7 @@ public class SearchController {
         return resp;
     }
 
-    @GetMapping("daysstocktran")
+    @GetMapping("stocktran")
     public BasicRes getDaysStock(@RequestParam(defaultValue = "5") Integer days,
                                  @RequestParam String code){
         BasicRes resp = new BasicRes();
@@ -42,7 +44,7 @@ public class SearchController {
         return resp;
     }
 
-    @GetMapping("dayscorptran")
+    @GetMapping("corptran")
     public BasicRes getDaysCorp(@RequestParam(defaultValue = "5") Integer days,
                                 @RequestParam String code){
         BasicRes resp = new BasicRes();
@@ -51,8 +53,13 @@ public class SearchController {
         return resp;
     }
 
-    @GetMapping("/test")
-    public void test() {
-        searchService.test();
+    @GetMapping("distribution")
+    public BasicRes getWeeksDistrubution(@RequestParam Integer weeks,
+                                         @RequestParam String code){
+        BasicRes resp = new BasicRes();
+        List<DistributionDTO> resultList = searchService.getWeeksDistribution(weeks, code);
+        resp.setData(resultList);
+        return resp;
     }
+
 }

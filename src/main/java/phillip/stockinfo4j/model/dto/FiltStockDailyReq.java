@@ -38,10 +38,39 @@ public class FiltStockDailyReq implements Serializable {
     }
 
     public void setTradingVolFlucPercentLL(Double tradingVolFlucPercentLL) {
-        this.tradingVolFlucPercentLL = tradingVolFlucPercentLL / 100;
+        try{
+            this.tradingVolFlucPercentLL = tradingVolFlucPercentLL/100;
+        }catch (Exception e){
+            return;
+        }
     }
 
     public void setTradingVolFlucPercentUL(Double tradingVolFlucPercentUL) {
-        this.tradingVolFlucPercentUL = tradingVolFlucPercentUL / 100;
+        try{
+            this.tradingVolFlucPercentUL = tradingVolFlucPercentUL/100;
+        }catch (Exception e){
+            return;
+        }
+    }
+
+    public void setYesterdayTradingVolLL(Integer yesterdayTradingVolLL) {
+        if(yesterdayTradingVolLL==null){
+            return;
+        }
+        this.yesterdayTradingVolLL = yesterdayTradingVolLL;
+    }
+
+    public void setYesterdayTradingVolUL(Integer yesterdayTradingVolUL) {
+        if(yesterdayTradingVolUL==null){
+            return;
+        }
+        this.yesterdayTradingVolUL = yesterdayTradingVolUL;
+    }
+
+    public void setTodayClosingUL(Double todayClosingUL) {
+        if(todayClosingUL==null){
+            return;
+        }
+        this.todayClosingUL = todayClosingUL;
     }
 }

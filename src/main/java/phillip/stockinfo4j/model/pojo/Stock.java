@@ -8,7 +8,7 @@ import phillip.stockinfo4j.model.dto.StockIndustryDTO;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@SqlResultSetMapping(name = "DTOResult", classes = {
+@SqlResultSetMapping(name = "StockDTOResult", classes = {
         @ConstructorResult(
                 targetClass = StockIndustryDTO.class,
                 columns = {

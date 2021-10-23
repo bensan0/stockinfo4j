@@ -3,10 +3,26 @@ package phillip.stockinfo4j.model.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import phillip.stockinfo4j.model.dto.DistributionDTO;
+import phillip.stockinfo4j.model.dto.StockIndustryDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
-
+@SqlResultSetMapping(name = "DistributionDTOResult", classes = {
+        @ConstructorResult(
+                targetClass = DistributionDTO.class,
+                columns = {
+                        @ColumnResult(name = "code", type = String.class),
+                        @ColumnResult(name = "name", type = String.class),
+                        @ColumnResult(name = "rate11", type = String.class),
+                        @ColumnResult(name = "rate12", type = String.class),
+                        @ColumnResult(name = "rate13", type = String.class),
+                        @ColumnResult(name = "rate14", type = String.class),
+                        @ColumnResult(name = "rate15", type = String.class),
+                        @ColumnResult(name = "total", type = String.class),
+                        @ColumnResult(name = "date", type = Integer.class),
+                })
+})
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

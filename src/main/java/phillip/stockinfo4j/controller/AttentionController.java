@@ -2,6 +2,7 @@ package phillip.stockinfo4j.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import phillip.stockinfo4j.model.dto.AttentionDTO;
 import phillip.stockinfo4j.model.dto.AttentionReq;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.model.pojo.Attention;
@@ -19,7 +20,7 @@ public class AttentionController {
     @GetMapping("all")
     public BasicRes getAll(){
         BasicRes resp = new BasicRes();
-        List<Attention> result = attentionService.getAllAttention();
+        List<AttentionDTO> result = attentionService.getAllAttention();
         resp.setData(result);
         return resp;
     }
@@ -31,7 +32,7 @@ public class AttentionController {
         return resp;
     }
 
-    @DeleteMapping("del")
+    @GetMapping("del")
     public BasicRes del(@RequestParam String code){
         BasicRes resp = new BasicRes();
         attentionService.delAttention(code);

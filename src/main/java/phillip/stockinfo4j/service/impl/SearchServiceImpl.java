@@ -2,13 +2,16 @@ package phillip.stockinfo4j.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.model.dto.DistributionDTO;
 import phillip.stockinfo4j.model.dto.FiltStockDailyDTO;
 import phillip.stockinfo4j.model.dto.FiltStockDailyReq;
 import phillip.stockinfo4j.model.dto.StockIndustryDTO;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
+import phillip.stockinfo4j.repository.DistributionRepo;
 import phillip.stockinfo4j.repository.StockDailyRepo;
 import phillip.stockinfo4j.service.SearchService;
 
@@ -29,6 +32,9 @@ public class SearchServiceImpl implements SearchService {
     @Autowired
     CorpDailyRepo corpDailyRepo;
 
+    @Autowired
+    DistributionRepo distributionRepo;
+
     @PersistenceContext
     EntityManager em;
 
@@ -41,7 +47,6 @@ public class SearchServiceImpl implements SearchService {
     public List<FiltStockDailyDTO> filtStockDaily(FiltStockDailyReq req) {
         //尋找輸入日期的上個交易日
         String date = req.getDate();
-        System.out.println("date:" + date);
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate today = LocalDate.parse(date, fmt);
         LocalDate yesterday = today.minusDays(1);
@@ -81,9 +86,6 @@ public class SearchServiceImpl implements SearchService {
             boolean isYTVLLConfirm = yesterdayTran.getTradingVol() >= req.getYesterdayTradingVolLL();
             boolean isYTVULConfirm = yesterdayTran.getTradingVol() <= req.getYesterdayTradingVolUL();
             boolean isTCULConfirm = todayTran.getClosing() <= req.getTodayClosingUL();
-            if (code.equals("1708")) {
-                System.out.println(isTVLLConfirm + "," + isTVULConfirm + "," + isYTVLLConfirm + "," + isYTVULConfirm + "," + isTCULConfirm);
-            }
             if (isTCULConfirm && isTVLLConfirm && isTVULConfirm && isYTVULConfirm && isYTVLLConfirm) {
                 codeList.add(todayTran.getCode());
             }
@@ -93,7 +95,7 @@ public class SearchServiceImpl implements SearchService {
         List<StockIndustryDTO> dtoList;
         try {
             String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList";
-            Query query = em.createNativeQuery(qstr, "DTOResult").setParameter("codeList", codeList);
+            Query query = em.createNativeQuery(qstr, "StockDTOResult").setParameter("codeList", codeList);
             dtoList = query.getResultList();
         } finally {
             em.close();
@@ -160,8 +162,17 @@ public class SearchServiceImpl implements SearchService {
         return resultList;
     }
 
-    public void test() {
-
+    @Transactional(rollbackFor = Exception.class)
+    public List<DistributionDTO> getWeeksDistribution(Integer weeks, String code) {
+        String qstr = "select a.code as code, b.name as name, a.rate11 as rate11, a.rate12 as rate12, a.rate13 as rate13, a.rate14 as rate14, a.rate15 as rate15, a.total as total, a.date as `date` " +
+                "from ownership_distribution a, stock_basic_info b " +
+                "where a.code = :code and a.code = b.code " +
+                "order by date desc limit :weeks";
+        List<DistributionDTO> resultList = em.createNativeQuery(qstr, "DistributionDTOResult")
+                .setParameter("code", code)
+                .setParameter("weeks", weeks)
+                .getResultList();
+        return resultList;
     }
 
     public static void main(String[] args) {
