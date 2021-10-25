@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 public class Stockinfo4jApplication {
 
     public static void main(String[] args) {
+        System.out.println("YA");
         SpringApplication.run(Stockinfo4jApplication.class, args);
     }
 }
