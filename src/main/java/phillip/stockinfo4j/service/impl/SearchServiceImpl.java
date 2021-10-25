@@ -131,12 +131,12 @@ public class SearchServiceImpl implements SearchService {
                 break;
             }
             if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY || yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                yesterday = yesterday.minusDays(1);
                 continue;
             }
             dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
             yesterday = yesterday.minusDays(1);
         }
-
         List<StockDailyTran> resultList = stockDailyRepo.findByDatesAndCode(dates, code);
         return resultList;
     }
@@ -152,6 +152,7 @@ public class SearchServiceImpl implements SearchService {
                 break;
             }
             if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY || yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                yesterday = yesterday.minusDays(1);
                 continue;
             }
             dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
@@ -173,12 +174,5 @@ public class SearchServiceImpl implements SearchService {
                 .setParameter("weeks", weeks)
                 .getResultList();
         return resultList;
-    }
-
-    public static void main(String[] args) {
-        String date = "20211021";
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate today = LocalDate.parse(date, fmt);
-        System.out.println(today.format(fmt));
     }
 }

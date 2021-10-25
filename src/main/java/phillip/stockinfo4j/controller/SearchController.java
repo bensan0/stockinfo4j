@@ -27,7 +27,6 @@ public class SearchController {
      */
     @PostMapping("filtstockdaily")
     public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) {
-        System.out.println("req:" + req);
         BasicRes resp = new BasicRes();
         DownloadUtils.isDateSaturdayOrSunday(req.getDate());
         DownloadUtils.isDateConform(req.getDate());
@@ -54,7 +53,7 @@ public class SearchController {
     }
 
     @GetMapping("distribution")
-    public BasicRes getWeeksDistrubution(@RequestParam Integer weeks,
+    public BasicRes getWeeksDistrubution(@RequestParam(defaultValue = "4") Integer weeks,
                                          @RequestParam String code){
         BasicRes resp = new BasicRes();
         List<DistributionDTO> resultList = searchService.getWeeksDistribution(weeks, code);

@@ -123,6 +123,16 @@ public class DownloadUtils {
         return result;
     }
 
+    public static Long parseStrToLong(String str){
+        Long result;
+        try {
+            result = Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+        return result;
+    }
+
     /**
      * @param str
      * @return

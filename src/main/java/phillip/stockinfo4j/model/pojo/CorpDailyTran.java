@@ -24,25 +24,25 @@ public class CorpDailyTran implements Serializable {
     private String name;
 
     @Column(name = "foreign_investors",nullable = false)
-    private Integer foreignInvestors = 0;//外陸資
+    private Long foreignInvestors = 0L;//外陸資
 
     @Column(name = "foreign_corp",nullable = false)
-    private Integer foreignCorp = 0;//外資自營商
+    private Long foreignCorp = 0L;//外資自營商
 
     @Column(name = "investment_trust",nullable = false)
-    private Integer investmentTrust = 0;//投信
+    private Long investmentTrust = 0L;//投信
 
     @Column(name = "dealer",nullable = false)
-    private Integer dealer = 0;//自營商
+    private Long dealer = 0L;//自營商
 
     @Column(name = "dealer_self",nullable = false)
-    private Integer dealerSelf = 0;//自營商自行
+    private Long dealerSelf = 0L;//自營商自行
 
     @Column(name = "dealer_hedge",nullable = false)
-    private Integer dealerHedge = 0;//自營商避險
+    private Long dealerHedge = 0L;//自營商避險
 
     @Column(name = "total",nullable = false)
-    private Integer total = 0;//三大法人合計(不含自營商)
+    private Long total = 0L;//三大法人合計(不含自營商)
 
     @Column(name = "date",nullable = false)
     private Integer date;

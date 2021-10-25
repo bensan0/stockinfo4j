@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
+            crossorigin="anonymous"></script>
+    <script type="text/javascript" src="./stockanalys.js"></script>
+    <style>
+        .split {
+            display: block;
+            text-align: center;
+            height: 50px;
+        }
+
+        h4 {
+            display: block;
+            text-align: center;
+        }
+
+        #functionsdisplay {
+            display: flex;
+            /* flex-direction: row; */
+            justify-content: space-between;
+            flex-flow: wrap;
+            /* background-color: #61a0f8; */
+            width: 80%;
+            height: calc(90%);
+            padding: 5px;
+            border: 3px solid seagreen;
+        }
+
+        .parent {
+            /* background-color: #f08bc3; */
+            border: 2px solid red;
+            margin: 5px;
+            flex: 0 0 30%;
+            /* justify-content: center;
+            align-items: center; */
+            height: 500px;
+        }
+
+        .inputblock {
+            height: auto;
+        }
+
+        .tableblock {
+            height: 76%;
+            overflow: auto;
+        }
+
+        #filterstocktrans {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 40%;
+        }
+
+        #filterstock {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 30%;
+
+        }
+
+        #corptrans {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 60%;
+        }
+
+        #searchdistrubution {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 50%;
+        }
+
+        #stocktrans {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 40%;
+        }
+
+        #attentions {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 50%;
+        }
+
+        /* table tbody {
+            display: block;
+        } */
+
+        table thead,
+        tbody tr {
+            /* display: table; */
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        table thead {
+            width: calc(100% - 1em);
+            position: sticky;
+            top: 0;
+            background-color: whitesmoke;
+        }
+
+        #filterstock > .tableblock {
+            height: calc(70%);
+        }
+
+        #filterstocktrans > .tableblock {
+            height: calc(93%);
+        }
+
+        footer {
+            margin-left: 50%;
+            margin-right: 50%;
+            margin-top: 0%;
+        }
+
+        input {
+            width: 150px;
+        }
+
+        input[type="radio"] {
+            width: auto;
+        }
+
+        ::placeholder {
+            color: red;
+            font-size: 0.4em;
+        }
+
+        th {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<span>獲取每日個股及三大法人</span>
+<input id="getdailyyyyymmdd" type="text" maxlength="8" placeholder="yyyymmdd,預設今日">
+<button onclick="getDaily()">執行</button>
+<br>
+<label>狀態:</label>
+<text id="getdailystatus"></text>
+<br>
+
+<span>獲取當周股權分佈資訊</span>
+<button onclick="getDistribution()">執行</button>
+<br>
+<label>狀態:</label>
+<text id="getdistributionstatus"></text>
+<br>
+
+<!-- <span>測試</span>
+<button onclick="fetchApiGet()">執行</button><br>
+<text id=""></text>
+<br> -->
+
+<div class="container-xxl">
+    <h1>台股加權指數</h1>
+    <div id="" name="" class="functionblock tableblock">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">日期</th>
+                <th scope="col">收盤指數</th>
+                <th scope="col">漲跌</th>
+                <th scope="col">漲跌幅</th>
+            </tr>
+            </thead>
+            <tbody id="tcwsitbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<span class="split"></span>
+
+<div class="container-xxl" id="functionsdisplay">
+
+    <div id="filterstock" name="" class="functionblock parent">
+        <div id="" name="" class="functionblock inputblock">
+            <h4>篩選交易量>前日個股</h4>
+            <input id="filterdate" type="text" placeholder="yyyymmdd,預設今日">
+            <input id="filterlowerpercent" min="0" type="number" placeholder="今>昨%下限,預設四十">
+            <input id="filterhigherpercent" type="number" min="0" placeholder="今>昨%上限,預設一萬">
+            <input id="filterlowervol" type="number" min="0" placeholder="最低昨交易量,預設三千">
+            <input id="filterhighervol" type="number" min="0" placeholder="最高昨交易量,預設十萬">
+            <input id="filterhigherprice" type="number" min="0" placeholder="今日收盤價上限,預設四千">
+            <button onclick="filtTradingvol()">執行</button>
+            <button onclick="clearFilter()">清除</button>
+            <br>
+            <text id="filterstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">業種</th>
+                </tr>
+                </thead>
+                <tbody id="filtertbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="filterstocktrans" name="" class="functionblock parent">
+        <div id="" name="" class="functionblock inputblock">
+            <h4>個股交易資訊</h4>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">成交量(張)</th>
+                    <th scope="col">收盤價</th>
+                    <th scope="col">漲跌幅(%)</th>
+                    <th scope="col">漲跌價差</th>
+                    <th scope="col">日期</th>
+                </tr>
+                </thead>
+                <tbody id="filtertranstbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="stocktrans" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>查詢個股今日~交易資訊</h4>
+            <input id="stocktransdays" type="number" min="1" placeholder="日數(含今日)">
+            <input id="stocktranscode" type="text" required="required" pattern="[A-Za-z0-9]{1,20}"
+                   placeholder="個股代號">
+            <button onclick="getStockTrans()">執行</button>
+            <button onclick="clearStockTrans()">清除</button>
+            <br>
+            <text id="stocktransstatus"></text>
+        </div>
+        <div name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">成交量(張)</th>
+                    <th scope="col">收盤價</th>
+                    <th scope="col">漲跌幅(%)</th>
+                    <th scope="col">漲跌價差</th>
+                    <th scope="col">日期</th>
+                </tr>
+                </thead>
+                <tbody id="stocktranstbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="stockotherinfo" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>個股其他資訊</h4>
+            <text id="stockotherinfostatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <ul style="list-style-type:square">
+                <li>主要業務:
+                    <text id="mainbusiness"></text>
+                </li>
+                <li>本益比:<span id="per"></span></li>
+
+            </ul>
+            <ul style="list-style-type:square">
+                <li>融資餘額:<span id="financingbalance"></span><span>張</span></li>
+                <li>狀態:<span id="financingbalancestatus"></span></li>
+                <li>融券餘額:<span id="marginbalance"></span><span>張</span></li>
+                <li>狀態:<span id="marginbalancestatus"></span></li>
+                <li>券資比:<span id="marginfinancing"></span><span>%</span></li>
+                <li>狀態:<span id="marginfinancingstatus"></span></li>
+            </ul>
+            <ul style="list-style-type:square">
+                <li>5MA:<span id="ma5"></span></li>
+                <li>乖離率:<span id="ma5bias"></span></li>
+                <li>10MA:<span id="ma10"></span></li>
+                <li>乖離率:<span id="ma10bias"></span></li>
+                <li>20MA:<span id="ma20"></span><span></span></li>
+                <li>乖離率:<span id="ma20bias"></span></li>
+            </ul>
+            <ul style="list-style-type:square">
+                <li>單月營收</li>
+                <li>日期:<span id="revenuedate"></span></li>
+                <li>月增:<span id="revenuemonthfluc"></span><span>%</span></li>
+                <li>年增:<span id="revenueyearfluc"></span><span>%</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!--    <div id="majortrans" name="" class="functionblock parent">-->
+    <!--        <div name="" class="functionblock inputblock">-->
+    <!--            <h4>主力進出(未完成)</h4>-->
+    <!--            <input type="radio" name="days" value="1">近1日-->
+    <!--            <input type="radio" name="days" value="5">近5日-->
+    <!--            <input id="majortranscode" type="text" required="required" pattern="[A-Za-z0-9]{1,20}"-->
+    <!--                   placeholder="個股代號">-->
+    <!--            <button onclick="">執行</button>-->
+    <!--            <button onclick="">清除</button>-->
+    <!--            <br>-->
+    <!--            <text id="majortransstatus"></text>-->
+    <!--        </div>-->
+    <!--        <div id="" name="" class="functionblock tableblock">-->
+    <!--            <table class="table table-striped">-->
+    <!--                <thead>-->
+    <!--                <tr>-->
+    <!--                    <th scope="col">代號</th>-->
+    <!--                    <th scope="col">名稱</th>-->
+    <!--                    <th scope="col">三大法人合計買賣超</th>-->
+    <!--                    <th scope="col">日期</th>-->
+    <!--                </tr>-->
+    <!--                </thead>-->
+    <!--                <tbody id="majortranstbody">-->
+    <!--                </tbody>-->
+    <!--            </table>-->
+    <!--        </div>-->
+    <!--    </div>-->
+
+    <div id="corptrans" name="" class="functionblock parent">
+        <div id="" name="" class="functionblock inputblock">
+            <h4>查詢三大法人今日~交易資訊</h4>
+            <input id="corptransdays" type="number" min="1" placeholder="日數(含今日)">
+            <input id="corptranscode" type="text" required="required" pattern="[A-Za-z0-9]{1,20}"
+                   placeholder="個股代號">
+            <button onclick="getCorpTrans()">執行</button>
+            <button onclick="clearCorpTrans()">清除</button>
+            <br>
+            <text id="corptransstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">外陸資買賣超</th>
+                    <!--                    <th scope="col">外資自營商買賣超</th>-->
+                    <th scope="col">投信買賣超</th>
+                    <th scope="col">自營商買賣超</th>
+                    <!--                    <th scope="col">自營商(自行)買賣超</th>-->
+                    <!--                    <th scope="col">自營商(避險)買賣超</th>-->
+                    <th scope="col">三大法人合計買賣超</th>
+                    <th scope="col">日期</th>
+                </tr>
+                </thead>
+                <tbody id="corptranstbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="attentions" name="" class="functionblock parent">
+        <div id="" name="" class="functionblock inputblock">
+            <h4>觀察清單</h4>
+            <input id="attentionscode" type="text" required="required" pattern="[A-Za-z0-9]{1,20}"
+                   placeholder="個股代號">
+            <input id="attentionscomment" type="text" required="required" placeholder="備註">
+            <button onclick="addAttention()">新增</button>
+            <br>
+            <text id="attentionsstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">業種</th>
+                    <th scope="col">備註</th>
+                    <th scope="col">加入日期</th>
+                    <!--                    <th scope="col"></th>-->
+                </tr>
+                </thead>
+                <tbody id="attentionstbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="searchdistrubution" name="" class="functionblock parent">
+        <div id="" name="" class="functionblock inputblock">
+            <h4>股權分佈</h4>
+            <input id="distrubutioncode" type="text" required="required" pattern="[0-9]{4}" placeholder="代號">
+            <input id="distrubutionweeks" type="number" min="1" placeholder="週數">
+            <button onclick="searchDistribution()">執行</button>
+            <button onclick="clearSearchDistribution()">清除</button>
+            <br>
+            <text id="searchdistrubutionstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th scope="col" colspan="3">200-400張</th>
+                    <th scope="col" colspan="3">400-600張</th>
+                    <th scope="col" colspan="3">600-800張</th>
+                    <th scope="col" colspan="3">800-1000張</th>
+                    <th scope="col" colspan="3">1000張以上</th>
+                    <th scope="col" colspan="3">r1-r15合計</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">人數</th>
+                    <th scope="col">張</th>
+                    <th scope="col">佔比</th>
+                    <th scope="col">人數</th>
+                    <th scope="col">張</th>
+                    <th scope="col">佔比</th>
+                    <th scope="col">人數</th>
+                    <th scope="col">張</th>
+                    <th scope="col">佔比</th>
+                    <th scope="col">人數</th>
+                    <th scope="col">張</th>
+                    <th scope="col">佔比</th>
+                    <th scope="col">人數</th>
+                    <th scope="col">張</th>
+                    <th scope="col">佔比</th>
+                    <th scope="col">人數</th>
+                    <th scope="col">張</th>
+                    <th scope="col">佔比</th>
+                    <th scope="col">日期</th>
+                </tr>
+                </thead>
+                <tbody id="searchdistributiontbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<footer>
+    HOHOHO
+</footer>
+<script>
+    window.onload = getAttention
+</script>
+</body>
+
+</html>

@@ -11,9 +11,6 @@ import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.service.DownloadService;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 @RestController
 @RequestMapping("downloaders")
 public class Downloaders {
@@ -41,7 +38,7 @@ public class Downloaders {
     }
 
     @GetMapping("distribution")
-    public BasicRes getDistribution() throws RuntimeException{
+    public BasicRes getDistribution() throws RuntimeException {
         BasicRes resp = new BasicRes();
         downloadService.getTWCCDistribution();
         return resp;

@@ -202,8 +202,8 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setTradingVol(DownloadUtils.parseStrToDouble(split1[2].replace(",", "").trim()).intValue() / 1000);
-                tran.setDeal(DownloadUtils.parseStrToDouble(split1[3].replace(",", "").trim()).intValue());
+                tran.setTradingVol(DownloadUtils.parseStrToDouble(split1[2].replace(",", "").trim()).longValue() / 1000);
+                tran.setDeal(DownloadUtils.parseStrToDouble(split1[3].replace(",", "").trim()).longValue());
                 tran.setOpening(DownloadUtils.parseStrToDouble(split1[5].replace(",", "").trim()));
                 tran.setHighest(DownloadUtils.parseStrToDouble(split1[6].replace(",", "").trim()));
                 tran.setLowest(DownloadUtils.parseStrToDouble(split1[7].replace(",", "").trim()));
@@ -292,13 +292,13 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setForeignInvestors(DownloadUtils.parseStrToInteger(split1[4].trim().replace(",", "")) / 1000);
-                tran.setForeignCorp(DownloadUtils.parseStrToInteger(split1[7].trim().replace(",", "")) / 1000);
-                tran.setInvestmentTrust(DownloadUtils.parseStrToInteger(split1[10].trim().replace(",", "")) / 1000);
-                tran.setDealer(DownloadUtils.parseStrToInteger(split1[11].trim().replace(",", "")) / 1000);
-                tran.setDealerSelf(DownloadUtils.parseStrToInteger(split1[14].trim().replace(",", "")) / 1000);
-                tran.setDealerHedge(DownloadUtils.parseStrToInteger(split1[17].trim().replace(",", "")) / 1000);
-                tran.setTotal(DownloadUtils.parseStrToInteger(split1[18].trim().replace(",", "")) / 1000);
+                tran.setForeignInvestors(DownloadUtils.parseStrToLong(split1[4].trim().replace(",", "")) / 1000);
+                tran.setForeignCorp(DownloadUtils.parseStrToLong(split1[7].trim().replace(",", "")) / 1000);
+                tran.setInvestmentTrust(DownloadUtils.parseStrToLong(split1[10].trim().replace(",", "")) / 1000);
+                tran.setDealer(DownloadUtils.parseStrToLong(split1[11].trim().replace(",", "")) / 1000);
+                tran.setDealerSelf(DownloadUtils.parseStrToLong(split1[14].trim().replace(",", "")) / 1000);
+                tran.setDealerHedge(DownloadUtils.parseStrToLong(split1[17].trim().replace(",", "")) / 1000);
+                tran.setTotal(DownloadUtils.parseStrToLong(split1[18].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 13, li + 1 + 21)));
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
@@ -384,8 +384,8 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setOpening(DownloadUtils.parseStrToDouble(split1[4].trim().replace(",", "")));
                 tran.setHighest(DownloadUtils.parseStrToDouble(split1[5].trim().replace(",", "")));
                 tran.setLowest(DownloadUtils.parseStrToDouble(split1[6].trim().replace(",", "")));
-                tran.setTradingVol(DownloadUtils.parseStrToInteger(split1[8].trim().replace(",", "")) / 1000);
-                tran.setDeal(DownloadUtils.parseStrToInteger(split1[10].trim().replace(",", "")));
+                tran.setTradingVol(DownloadUtils.parseStrToLong(split1[8].trim().replace(",", "")) / 1000);
+                tran.setDeal(DownloadUtils.parseStrToLong(split1[10].trim().replace(",", "")));
                 Double yesterdayClosing = tran.getClosing();
                 tran.setFlucPer(DownloadUtils.parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
                 int li = filePath.lastIndexOf("/");
@@ -464,13 +464,13 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setForeignInvestors(DownloadUtils.parseStrToInteger(split1[4].trim().replace(",", "")) / 1000);
-                tran.setForeignCorp(DownloadUtils.parseStrToInteger(split1[7].trim().replace(",", "")) / 1000);
-                tran.setInvestmentTrust(DownloadUtils.parseStrToInteger(split1[13].trim().replace(",", "")) / 1000);
-                tran.setDealerSelf(DownloadUtils.parseStrToInteger(split1[16].trim().replace(",", "")) / 1000);
-                tran.setDealerHedge(DownloadUtils.parseStrToInteger(split1[19].trim().replace(",", "")) / 1000);
-                tran.setDealer(DownloadUtils.parseStrToInteger(split1[22].trim().replace(",", "")) / 1000);
-                tran.setTotal(DownloadUtils.parseStrToInteger(split1[23].trim().replace(",", "")) / 1000);
+                tran.setForeignInvestors(DownloadUtils.parseStrToLong(split1[4].trim().replace(",", "")) / 1000);
+                tran.setForeignCorp(DownloadUtils.parseStrToLong(split1[7].trim().replace(",", "")) / 1000);
+                tran.setInvestmentTrust(DownloadUtils.parseStrToLong(split1[13].trim().replace(",", "")) / 1000);
+                tran.setDealerSelf(DownloadUtils.parseStrToLong(split1[16].trim().replace(",", "")) / 1000);
+                tran.setDealerHedge(DownloadUtils.parseStrToLong(split1[19].trim().replace(",", "")) / 1000);
+                tran.setDealer(DownloadUtils.parseStrToLong(split1[22].trim().replace(",", "")) / 1000);
+                tran.setTotal(DownloadUtils.parseStrToLong(split1[23].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 13, li + 1 + 21)));
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
@@ -584,21 +584,21 @@ public class DownloadServiceImpl implements DownloadService {
                         tran.setCode(split1[1]);
                         tran.setDate(DownloadUtils.parseStrToInteger(split1[0]));
                         tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
-                        tran.setRate11(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate11(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                     case 12:
-                        tran.setRate12(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate12(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 13:
-                        tran.setRate13(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate13(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 14:
-                        tran.setRate14(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate14(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 15:
-                        tran.setRate15(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate15(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 17:
-                        tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToInteger(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         tranList.add(tran);
                         tran = new Distribution();
                         break;
