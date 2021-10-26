@@ -151,7 +151,7 @@ public class DownloadUtils {
      * @return
      */
     public static DecimalFormat getDecimalFormat() {
-        DecimalFormat df = new DecimalFormat("############.00");
+        DecimalFormat df = new DecimalFormat("###########0.00");
         df.setRoundingMode(RoundingMode.DOWN);
         return df;
     }

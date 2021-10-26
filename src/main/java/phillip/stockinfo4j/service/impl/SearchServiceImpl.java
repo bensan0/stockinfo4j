@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.model.dto.DistributionDTO;
-import phillip.stockinfo4j.model.dto.FiltStockDailyDTO;
-import phillip.stockinfo4j.model.dto.FiltStockDailyReq;
-import phillip.stockinfo4j.model.dto.StockIndustryDTO;
+import phillip.stockinfo4j.model.dto.*;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
@@ -18,6 +15,7 @@ import phillip.stockinfo4j.service.SearchService;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -169,10 +167,85 @@ public class SearchServiceImpl implements SearchService {
                 "from ownership_distribution a, stock_basic_info b " +
                 "where a.code = :code and a.code = b.code " +
                 "order by date desc limit :weeks";
-        List<DistributionDTO> resultList = em.createNativeQuery(qstr, "DistributionDTOResult")
-                .setParameter("code", code)
-                .setParameter("weeks", weeks)
-                .getResultList();
+        List<DistributionDTO> resultList;
+
+        try {
+            resultList = em.createNativeQuery(qstr, "DistributionDTOResult")
+                    .setParameter("code", code)
+                    .setParameter("weeks", weeks)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+        return resultList;
+    }
+
+    public List<SlowlyIncreaseDTO> getSlowlyIncrease(Integer date, Double flucPer) {
+        System.out.println("flucPer:" + flucPer);
+        Set<Integer> dates = new HashSet<>();
+        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        LocalDate startDate = LocalDate.parse(date.toString(), fmt);
+        dates.add(date);
+        LocalDate pastDate = null;
+        int diff = 0;
+        for (int i = 1; ; i++) {
+            if (diff >= 4) {
+                break;
+            }
+            pastDate = startDate.minusDays(i);
+            if (pastDate.getDayOfWeek() == DayOfWeek.SATURDAY || pastDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                continue;
+            } else {
+                diff++;
+            }
+        }
+        dates.add(DownloadUtils.parseStrToInteger(pastDate.format(fmt)));
+        System.out.println("dates:" + dates);
+        List<StockDailyTran> tranList = stockDailyRepo.findByDates(dates);
+        Map<String, StockDailyTran> startDateMap = new HashMap<>();
+        Map<String, StockDailyTran> pastDateMap = new HashMap<>();
+        for (StockDailyTran tran : tranList) {
+            if (tran.getDate().toString().equals(startDate.format(fmt))) {
+                startDateMap.put(tran.getCode(), tran);
+            } else {
+                pastDateMap.put(tran.getCode(), tran);
+            }
+        }
+        Set<String> codeList = new HashSet<>();
+        startDateMap.forEach((code, tran) -> {
+            StockDailyTran yesterdayTran = pastDateMap.get(code);
+            if (yesterdayTran == null) {
+                return;
+            }
+
+            if (tran.getClosing() >= (yesterdayTran.getClosing() * (1 + flucPer/100))) {
+                codeList.add(code);
+            }
+        });
+        System.out.println("codeList:" + codeList);
+        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by code";
+        List<StockIndustryDTO> dtoList;
+        try {
+            dtoList = em.createNativeQuery(qstr, "StockDTOResult")
+                    .setParameter("codeList", codeList)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+        List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
+        DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
+
+        for (StockIndustryDTO dto : dtoList) {
+            SlowlyIncreaseDTO slow = new SlowlyIncreaseDTO(dto);
+            slow.setNowPrice(startDateMap.get(slow.getCode()).getClosing());
+            slow.setPastPrice(pastDateMap.get(slow.getCode()).getClosing());
+            Double per = (slow.getNowPrice() - slow.getPastPrice()) / slow.getPastPrice();
+            System.out.println("per:" + per);
+            String formatted = dfmt.format(per*100);
+            System.out.println(formatted);
+            slow.setFlucPercent(formatted);
+            resultList.add(slow);
+        }
         return resultList;
     }
 }
