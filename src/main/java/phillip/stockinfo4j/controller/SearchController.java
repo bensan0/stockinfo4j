@@ -6,8 +6,8 @@ import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.model.dto.DistributionDTO;
 import phillip.stockinfo4j.model.dto.FiltStockDailyReq;
+import phillip.stockinfo4j.model.dto.SlowlyIncreaseDTO;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
-import phillip.stockinfo4j.model.pojo.Distribution;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.service.impl.SearchServiceImpl;
 
@@ -22,6 +22,7 @@ public class SearchController {
 
     /**
      * 篩選股票
+     *
      * @param req
      * @return
      */
@@ -36,7 +37,7 @@ public class SearchController {
 
     @GetMapping("stocktran")
     public BasicRes getDaysStock(@RequestParam(defaultValue = "5") Integer days,
-                                 @RequestParam String code){
+                                 @RequestParam String code) {
         BasicRes resp = new BasicRes();
         List<StockDailyTran> resultList = searchService.getDaysStock(days, code);
         resp.setData(resultList);
@@ -45,7 +46,7 @@ public class SearchController {
 
     @GetMapping("corptran")
     public BasicRes getDaysCorp(@RequestParam(defaultValue = "5") Integer days,
-                                @RequestParam String code){
+                                @RequestParam String code) {
         BasicRes resp = new BasicRes();
         List<CorpDailyTran> resultList = searchService.getDaysCorp(days, code);
         resp.setData(resultList);
@@ -54,9 +55,18 @@ public class SearchController {
 
     @GetMapping("distribution")
     public BasicRes getWeeksDistrubution(@RequestParam(defaultValue = "4") Integer weeks,
-                                         @RequestParam String code){
+                                         @RequestParam String code) {
         BasicRes resp = new BasicRes();
         List<DistributionDTO> resultList = searchService.getWeeksDistribution(weeks, code);
+        resp.setData(resultList);
+        return resp;
+    }
+
+    @GetMapping("slowlyincrease")
+    public BasicRes getSlowlyIncrease(@RequestParam Integer date,
+                                      @RequestParam Double flucPercent) {
+        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercent);
+        BasicRes resp = new BasicRes();
         resp.setData(resultList);
         return resp;
     }

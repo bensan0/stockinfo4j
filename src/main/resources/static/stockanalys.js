@@ -497,3 +497,45 @@ function getStockOtherInfo(code){
             document.getElementById('stockotherinfostatus').innerText = error;
         });
 }
+
+function getSlowlyincrease() {
+    clearSlowlyincrease()
+    let date = document.getElementById('slowlyincreasedate').value
+    let flucPercent = document.getElementById('slowlyincreasefluc').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincrease?date=' + date +  '&flucPercent=' + flucPercent)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==='0000') {
+                document.getElementById('slowlyincreasestatus').innerText = 'OK'
+                let slowlyincreasetbody = document.getElementById('slowlyincreasetbody');
+                jsonObj['data'].forEach(function (data) {
+                    slowlyincreasetbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '<td>' + data['pastPrice'] + '</td>' +
+                        '<td>' + data['nowPrice'] + '</td>' +
+                        '<td>' + data['flucPercent'] + '</td>' +
+                        '</tr>';
+                });
+            } else {
+                document.getElementById('slowlyincreasestatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('slowlyincreasestatus').innerHTML = error;
+        });
+}
+
+function clearSlowlyincrease(){
+    document.getElementById('slowlyincreasestatus').innerText = '';
+    document.getElementById('slowlyincreasetbody').innerHTML = '';
+}

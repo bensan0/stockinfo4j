@@ -11,6 +11,8 @@ import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.service.DownloadService;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("downloaders")
 public class Downloaders {
@@ -28,6 +30,9 @@ public class Downloaders {
     @GetMapping("/daily")
     public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws Exception {
         BasicRes resp = new BasicRes();
+        if(yyyyMMdd==null||yyyyMMdd.length()==0){
+            yyyyMMdd = LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd"));
+        }
         DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
         DownloadUtils.isDateConform(yyyyMMdd);
         if (!DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd) || !DownloadUtils.isDateConform(yyyyMMdd)) {

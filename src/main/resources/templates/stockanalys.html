@@ -306,33 +306,33 @@
         </div>
     </div>
 
-    <!--    <div id="majortrans" name="" class="functionblock parent">-->
-    <!--        <div name="" class="functionblock inputblock">-->
-    <!--            <h4>主力進出(未完成)</h4>-->
-    <!--            <input type="radio" name="days" value="1">近1日-->
-    <!--            <input type="radio" name="days" value="5">近5日-->
-    <!--            <input id="majortranscode" type="text" required="required" pattern="[A-Za-z0-9]{1,20}"-->
-    <!--                   placeholder="個股代號">-->
-    <!--            <button onclick="">執行</button>-->
-    <!--            <button onclick="">清除</button>-->
-    <!--            <br>-->
-    <!--            <text id="majortransstatus"></text>-->
-    <!--        </div>-->
-    <!--        <div id="" name="" class="functionblock tableblock">-->
-    <!--            <table class="table table-striped">-->
-    <!--                <thead>-->
-    <!--                <tr>-->
-    <!--                    <th scope="col">代號</th>-->
-    <!--                    <th scope="col">名稱</th>-->
-    <!--                    <th scope="col">三大法人合計買賣超</th>-->
-    <!--                    <th scope="col">日期</th>-->
-    <!--                </tr>-->
-    <!--                </thead>-->
-    <!--                <tbody id="majortranstbody">-->
-    <!--                </tbody>-->
-    <!--            </table>-->
-    <!--        </div>-->
-    <!--    </div>-->
+        <div id="slowlyincrease" name="" class="functionblock parent">
+            <div name="" class="functionblock inputblock">
+                <h4>過去5個交易日內緩漲</h4>
+                <input id="slowlyincreasedate" type="number" min="1" placeholder="日期">
+                <input id="slowlyincreasefluc" type="number" min="0" required="required" placeholder="漲幅(%)">
+                <button onclick="getSlowlyincrease()">執行</button>
+                <button onclick="clearSlowlyincrease()">清除</button>
+                <br>
+                <text id="slowlyincreasestatus"></text>
+            </div>
+            <div id="" name="" class="functionblock tableblock">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">代號</th>
+                        <th scope="col">名稱</th>
+                        <th scope="col">產業</th>
+                        <th scope="col">過去價格</th>
+                        <th scope="col">現在價格</th>
+                        <th scope="col">漲幅</th>
+                    </tr>
+                    </thead>
+                    <tbody id="slowlyincreasetbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     <div id="corptrans" name="" class="functionblock parent">
         <div id="" name="" class="functionblock inputblock">
