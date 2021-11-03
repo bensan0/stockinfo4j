@@ -233,14 +233,14 @@ public class SearchServiceImpl implements SearchService {
                     effectiveDays++;
                 }
             }
-            if (total!=0.00) {
-                pastAvgPrice = total/effectiveDays;
-            }else{
+            if (total != 0.00) {
+                pastAvgPrice = total / effectiveDays;
+            } else {
                 return;
             }
 
             Double startDateClosing = startDateTran.getClosing();
-            if (startDateClosing >= (pastAvgPrice * (1 + flucPerLL / 100)) && startDateClosing <= (pastAvgPrice * (1+flucPerUL/100))) {
+            if (startDateClosing >= (pastAvgPrice * (1 + flucPerLL / 100)) && startDateClosing <= (pastAvgPrice * (1 + flucPerUL / 100))) {
                 codeList.add(code);
                 pastDaysAvgPrice.put(code, pastAvgPrice);
             }
@@ -269,10 +269,92 @@ public class SearchServiceImpl implements SearchService {
         return resultList;
     }
 
-    public static void main(String[] args) {
-        Double a = 25.919999999999998;
+    public List<SlowlyIncreaseDTO> getSlowlyIncreaseTradingVol(Integer date, Double flucPerLL, Double flucPerUL, Integer days) {
+        List<Integer> dates = new ArrayList<>();
+        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        LocalDate startDate = LocalDate.parse(date.toString(), fmt);
+        dates.add(date);
+        LocalDate pastDate = null;
+        int diff = 0;
+        for (int i = 1; ; i++) {
+            if (diff >= days) {
+                break;
+            }
+            pastDate = startDate.minusDays(i);
+            if (pastDate.getDayOfWeek() == DayOfWeek.SATURDAY || pastDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                continue;
+            } else {
+                diff++;
+                dates.add(DownloadUtils.parseStrToInteger(pastDate.format(fmt)));
+            }
+        }
+
+        List<StockDailyTran> tranList = stockDailyRepo.findByDates(dates);
+        Map<String, StockDailyTran> startDateMap = new HashMap<>();
+        Map<String, List<StockDailyTran>> pastDaysMap = new HashMap<>();
+        for (StockDailyTran tran : tranList) {
+            if (tran.getDate().toString().equals(startDate.format(fmt))) {
+                startDateMap.put(tran.getCode(), tran);
+            } else {
+                if (pastDaysMap.get(tran.getCode()) == null) {
+                    List<StockDailyTran> list = new ArrayList<>();
+                    list.add(tran);
+                    pastDaysMap.put(tran.getCode(), list);
+                } else {
+                    pastDaysMap.get(tran.getCode()).add(tran);
+                }
+            }
+        }
+        Set<String> codeList = new HashSet<>();
+        Map<String, Long> pastDaysAvgTradingVol = new HashMap<>();
+        startDateMap.forEach((code, startDateTran) -> {
+            List<StockDailyTran> pastDaysTranList = pastDaysMap.get(code);
+            if (pastDaysTranList == null || pastDaysTranList.isEmpty()) {
+                return;
+            }
+
+            Long pastAvgTradingVol = 0L;
+            Long total = 0L;
+            Integer effectiveDays = 0;
+            for (StockDailyTran pastDaysTran : pastDaysTranList) {
+                if (pastDaysTran.getTradingVol() != 0L) {
+                    total += pastDaysTran.getTradingVol();
+                    effectiveDays++;
+                }
+            }
+            if (total != 0L) {
+                pastAvgTradingVol = total / effectiveDays;
+            } else {
+                return;
+            }
+
+            Long startDateTradingVol = startDateTran.getTradingVol();
+            if (startDateTradingVol >= (pastAvgTradingVol * (1 + flucPerLL / 100)) && startDateTradingVol <= (pastAvgTradingVol * (1 + flucPerUL / 100))) {
+                codeList.add(code);
+                pastDaysAvgTradingVol.put(code, pastAvgTradingVol);
+            }
+        });
+        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by code";
+        List<StockIndustryDTO> dtoList;
+        try {
+            dtoList = em.createNativeQuery(qstr, "StockDTOResult")
+                    .setParameter("codeList", codeList)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+        List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
         DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
-        System.out.println(dfmt.format(a));
-        System.out.println(Double.parseDouble(dfmt.format(a)));
+
+        for (StockIndustryDTO dto : dtoList) {
+            SlowlyIncreaseDTO slow = new SlowlyIncreaseDTO(dto);
+            slow.setNowTradingVol(startDateMap.get(slow.getCode()).getTradingVol());
+            slow.setPastTradingVolAvg(pastDaysAvgTradingVol.get(slow.getCode()));
+            Double per = (slow.getNowTradingVol().doubleValue() - slow.getPastTradingVolAvg().doubleValue()) / slow.getPastTradingVolAvg().doubleValue();
+            String formatted = dfmt.format(per * 100);
+            slow.setFlucPercent(formatted);
+            resultList.add(slow);
+        }
+        return resultList;
     }
 }

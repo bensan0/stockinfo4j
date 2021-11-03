@@ -542,3 +542,48 @@ function clearSlowlyincrease(){
     document.getElementById('slowlyincreasestatus').innerText = '';
     document.getElementById('slowlyincreasetbody').innerHTML = '';
 }
+
+function getSlowlyincreaseTradingVol() {
+    clearSlowlyincreaseTradingVol()
+    let date = document.getElementById('slowlyincreaseTradingVoldate').value
+    let flucPercentLL = document.getElementById('slowlyincreaseTradingVolflucLL').value
+    let flucPercentUL = document.getElementById('slowlyincreaseTradingVolflucUL').value
+    let days = document.getElementById('slowlyincreaseTradingVoldays').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincreasetradingvol?date=' + date +  '&flucPercentLL=' + flucPercentLL
+        + '&flucPercentUL=' + flucPercentUL + '&days=' + days)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==='0000') {
+                document.getElementById('slowlyincreaseTradingVolstatus').innerText = 'OK'
+                let slowlyincreaseTradingVoltbody = document.getElementById('slowlyincreaseTradingVoltbody');
+                jsonObj['data'].forEach(function (data) {
+                    slowlyincreaseTradingVoltbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '<td>' + data['pastTradingVolAvg'] + '</td>' +
+                        '<td>' + data['nowTradingVol'] + '</td>' +
+                        '<td>' + data['flucPercent'] + '</td>' +
+                        '</tr>';
+                });
+            } else {
+                document.getElementById('slowlyincreaseTradingVolstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('slowlyincreaseTradingVolstatus').innerHTML = error;
+        });
+}
+
+function clearSlowlyincreaseTradingVol(){
+    document.getElementById('slowlyincreaseTradingVolstatus').innerText = '';
+    document.getElementById('slowlyincreaseTradingVoltbody').innerHTML = '';
+}

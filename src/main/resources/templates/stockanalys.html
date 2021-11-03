@@ -306,35 +306,63 @@
         </div>
     </div>
 
-        <div id="slowlyincrease" name="" class="functionblock parent">
-            <div name="" class="functionblock inputblock">
-                <h4>過去n個交易日內價格緩漲</h4>
-                <input id="slowlyincreasedate" type="number" min="1" placeholder="開始日期">
-                <input id="slowlyincreasedays" type="number" min="1" placeholder="過去日數">
-                <input id="slowlyincreaseflucLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
-                <input id="slowlyincreaseflucUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
-                <button onclick="getSlowlyincrease()">執行</button>
-                <button onclick="clearSlowlyincrease()">清除</button>
-                <br>
-                <text id="slowlyincreasestatus"></text>
-            </div>
-            <div id="" name="" class="functionblock tableblock">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col">代號</th>
-                        <th scope="col">名稱</th>
-                        <th scope="col">產業</th>
-                        <th scope="col">過去平均價格</th>
-                        <th scope="col">現在價格</th>
-                        <th scope="col">漲幅</th>
-                    </tr>
-                    </thead>
-                    <tbody id="slowlyincreasetbody">
-                    </tbody>
-                </table>
-            </div>
+    <div id="slowlyincrease" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>過去n個交易日內價格緩漲</h4>
+            <input id="slowlyincreasedate" type="number" min="1" placeholder="開始日期">
+            <input id="slowlyincreasedays" type="number" min="1" placeholder="過去日數">
+            <input id="slowlyincreaseflucLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+            <input id="slowlyincreaseflucUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
+            <button onclick="getSlowlyincrease()">執行</button>
+            <button onclick="clearSlowlyincrease()">清除</button>
+            <text id="slowlyincreasestatus"></text>
         </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">過去平均價格</th>
+                    <th scope="col">現在價格</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="slowlyincreasetbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="slowlyincreaseTradingVol" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>過去n個交易日內成交量緩漲</h4>
+            <input id="slowlyincreaseTradingVoldate" type="number" min="1" placeholder="開始日期">
+            <input id="slowlyincreaseTradingVoldays" type="number" min="1" placeholder="過去日數">
+            <input id="slowlyincreaseTradingVolflucLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+            <input id="slowlyincreaseTradingVolflucUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
+            <button onclick="getSlowlyincrease()">執行</button>
+            <button onclick="clearSlowlyincrease()">清除</button>
+            <text id="slowlyincreaseTradingVolstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">過去平均交易量</th>
+                    <th scope="col">現在交易量</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="slowlyincreaseTradingVoltbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <div id="corptrans" name="" class="functionblock parent">
         <div id="" name="" class="functionblock inputblock">

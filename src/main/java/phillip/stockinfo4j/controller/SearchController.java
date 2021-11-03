@@ -73,4 +73,15 @@ public class SearchController {
         return resp;
     }
 
+    @GetMapping("slowlyincreasetradingvol")
+    public BasicRes getSlowlyIncreaseTradingVol(@RequestParam Integer date,
+                                      @RequestParam Double flucPercentLL,
+                                      @RequestParam Double flucPercentUL,
+                                      @RequestParam Integer days ) {
+        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncreaseTradingVol(date, flucPercentLL, flucPercentUL, days);
+        BasicRes resp = new BasicRes();
+        resp.setData(resultList);
+        return resp;
+    }
+
 }
