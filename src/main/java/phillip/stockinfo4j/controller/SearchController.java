@@ -64,8 +64,10 @@ public class SearchController {
 
     @GetMapping("slowlyincrease")
     public BasicRes getSlowlyIncrease(@RequestParam Integer date,
-                                      @RequestParam Double flucPercent) {
-        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercent);
+                                      @RequestParam Double flucPercentLL,
+                                      @RequestParam Double flucPercentUL,
+                                      @RequestParam Integer days ) {
+        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
         return resp;

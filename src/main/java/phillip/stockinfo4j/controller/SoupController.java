@@ -25,11 +25,9 @@ public class SoupController {
 
     @GetMapping("stockotherinfo")
     public BasicRes getOtherInfo(@RequestParam String code) throws IOException, ExecutionException, InterruptedException {
-        System.out.println("code:" + code);
         BasicRes resp = new BasicRes();
         CompletableFuture<StockOtherInfoDTO> result = soupService.getOtherInfo(code);
         resp.setData(result.get());
-        System.out.println("result" + resp.getData());
         return resp;
     }
 }

@@ -501,8 +501,11 @@ function getStockOtherInfo(code){
 function getSlowlyincrease() {
     clearSlowlyincrease()
     let date = document.getElementById('slowlyincreasedate').value
-    let flucPercent = document.getElementById('slowlyincreasefluc').value
-    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincrease?date=' + date +  '&flucPercent=' + flucPercent)
+    let flucPercentLL = document.getElementById('slowlyincreaseflucLL').value
+    let flucPercentUL = document.getElementById('slowlyincreaseflucUL').value
+    let days = document.getElementById('slowlyincreasedays').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincrease?date=' + date +  '&flucPercentLL=' + flucPercentLL
+     + '&flucPercentUL=' + flucPercentUL + '&days=' + days)
         .then(res => {
             if (res.status === 200) {
                 return res.json()

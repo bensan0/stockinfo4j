@@ -308,9 +308,11 @@
 
         <div id="slowlyincrease" name="" class="functionblock parent">
             <div name="" class="functionblock inputblock">
-                <h4>過去5個交易日內緩漲</h4>
-                <input id="slowlyincreasedate" type="number" min="1" placeholder="日期">
-                <input id="slowlyincreasefluc" type="number" min="0" required="required" placeholder="漲幅(%)">
+                <h4>過去n個交易日內價格緩漲</h4>
+                <input id="slowlyincreasedate" type="number" min="1" placeholder="開始日期">
+                <input id="slowlyincreasedays" type="number" min="1" placeholder="過去日數">
+                <input id="slowlyincreaseflucLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+                <input id="slowlyincreaseflucUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
                 <button onclick="getSlowlyincrease()">執行</button>
                 <button onclick="clearSlowlyincrease()">清除</button>
                 <br>
@@ -323,7 +325,7 @@
                         <th scope="col">代號</th>
                         <th scope="col">名稱</th>
                         <th scope="col">產業</th>
-                        <th scope="col">過去價格</th>
+                        <th scope="col">過去平均價格</th>
                         <th scope="col">現在價格</th>
                         <th scope="col">漲幅</th>
                     </tr>

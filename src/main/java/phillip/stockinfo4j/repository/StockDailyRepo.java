@@ -12,8 +12,8 @@ import java.util.Set;
 @Repository
 public interface StockDailyRepo extends JpaRepository<StockDailyTran, Long> {
 
-    @Query(value = "select * from stock_daily_trans where date in :dates",nativeQuery = true)
-    List<StockDailyTran> findByDates(@Param("dates") Set<Integer> dates);
+    @Query(value = "select * from stock_daily_trans where date in :dates order by date DESC",nativeQuery = true)
+    List<StockDailyTran> findByDates(@Param("dates") List<Integer> dates);
 
     @Query(value = "select * from stock_daily_trans where date in :dates and code = :code order by date desc", nativeQuery = true)
     List<StockDailyTran> findByDatesAndCode(@Param("dates") Set<Integer> dates, @Param("code") String code);
