@@ -20,6 +20,7 @@ public class SearchController {
     @Autowired
     SearchServiceImpl searchService;
 
+
     /**
      * 篩選股票
      *
@@ -66,7 +67,7 @@ public class SearchController {
     public BasicRes getSlowlyIncrease(@RequestParam Integer date,
                                       @RequestParam Double flucPercentLL,
                                       @RequestParam Double flucPercentUL,
-                                      @RequestParam Integer days ) {
+                                      @RequestParam Integer days) {
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
@@ -75,13 +76,12 @@ public class SearchController {
 
     @GetMapping("slowlyincreasetradingvol")
     public BasicRes getSlowlyIncreaseTradingVol(@RequestParam Integer date,
-                                      @RequestParam Double flucPercentLL,
-                                      @RequestParam Double flucPercentUL,
-                                      @RequestParam Integer days ) {
+                                                @RequestParam Double flucPercentLL,
+                                                @RequestParam Double flucPercentUL,
+                                                @RequestParam Integer days) {
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncreaseTradingVol(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
         return resp;
     }
-
 }

@@ -1,13 +1,16 @@
 package phillip.stockinfo4j.appconfig;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
-import java.util.ResourceBundle;
 
 /**
  * 需要初始化的Bean
@@ -24,14 +27,22 @@ public class BeanConfig {
         return restTemplate;
     }
 
-    @Bean
-    public ResourceBundle resource() {
-        ResourceBundle resource = ResourceBundle.getBundle("setting");//test為屬性檔名，放在包com.mmq下，如果是放在src下，直接用test即可
-        return resource;
-    }
-
     @Bean(name = "yyyyMMddFormatter")
     public SimpleDateFormat simpleDateFormat() {
         return new SimpleDateFormat("yyyyMMdd");
+    }
+
+    @Component
+    @ConfigurationProperties(prefix = "setting")
+    @PropertySource("classpath:setting.properties")
+    @Data
+    public class Setting {
+        private String TWSEStockDailyUrl;
+        private String TWSECorpDailyUrl;
+        private String TPEXStockDailyUrl;
+        private String TPEXCorpDailyUrl;
+        private String DistributionUrl;
+        private String TempDir;
+        private String StockOtherInfoUrl;
     }
 }
