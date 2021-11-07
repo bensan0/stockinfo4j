@@ -501,8 +501,11 @@ function getStockOtherInfo(code){
 function getSlowlyincrease() {
     clearSlowlyincrease()
     let date = document.getElementById('slowlyincreasedate').value
-    let flucPercent = document.getElementById('slowlyincreasefluc').value
-    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincrease?date=' + date +  '&flucPercent=' + flucPercent)
+    let flucPercentLL = document.getElementById('slowlyincreaseflucLL').value
+    let flucPercentUL = document.getElementById('slowlyincreaseflucUL').value
+    let days = document.getElementById('slowlyincreasedays').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincrease?date=' + date +  '&flucPercentLL=' + flucPercentLL
+     + '&flucPercentUL=' + flucPercentUL + '&days=' + days)
         .then(res => {
             if (res.status === 200) {
                 return res.json()
@@ -538,4 +541,134 @@ function getSlowlyincrease() {
 function clearSlowlyincrease(){
     document.getElementById('slowlyincreasestatus').innerText = '';
     document.getElementById('slowlyincreasetbody').innerHTML = '';
+}
+
+function getSlowlyincreaseTradingVol() {
+    clearSlowlyincreaseTradingVol()
+    let date = document.getElementById('slowlyincreaseTradingVoldate').value
+    let flucPercentLL = document.getElementById('slowlyincreaseTradingVolflucLL').value
+    let flucPercentUL = document.getElementById('slowlyincreaseTradingVolflucUL').value
+    let days = document.getElementById('slowlyincreaseTradingVoldays').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/slowlyincreasetradingvol?date=' + date +  '&flucPercentLL=' + flucPercentLL
+        + '&flucPercentUL=' + flucPercentUL + '&days=' + days)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==='0000') {
+                document.getElementById('slowlyincreaseTradingVolstatus').innerText = 'OK'
+                let slowlyincreaseTradingVoltbody = document.getElementById('slowlyincreaseTradingVoltbody');
+                jsonObj['data'].forEach(function (data) {
+                    slowlyincreaseTradingVoltbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '<td>' + data['pastTradingVolAvg'] + '</td>' +
+                        '<td>' + data['nowTradingVol'] + '</td>' +
+                        '<td>' + data['flucPercent'] + '</td>' +
+                        '</tr>';
+                });
+            } else {
+                document.getElementById('slowlyincreaseTradingVolstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('slowlyincreaseTradingVolstatus').innerHTML = error;
+        });
+}
+
+function clearSlowlyincreaseTradingVol(){
+    document.getElementById('slowlyincreaseTradingVolstatus').innerText = '';
+    document.getElementById('slowlyincreaseTradingVoltbody').innerHTML = '';
+}
+
+function getFlucSearch() {
+    clearFlucSearch()
+    let date = document.getElementById('flucsearchdate').value
+    let flucPercentLL = document.getElementById('flucsearchLL').value
+    let flucPercentUL = document.getElementById('flucsearchUL').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/flucperanddate?date=' + date +  '&flucPercentLL=' + flucPercentLL
+        + '&flucPercentUL=' + flucPercentUL)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==='0000') {
+                document.getElementById('flucsearchstatus').innerText = 'OK'
+                let flucsearchtbody = document.getElementById('flucsearchtbody');
+                jsonObj['data'].forEach(function (data) {
+                    flucsearchtbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '<td>' + data['closing'] + '</td>' +
+                        '<td>' + data['fluc'] + '</td>' +
+                        '<td>' + data['flucPer'] + '</td>' +
+                        '</tr>';
+                });
+            } else {
+                document.getElementById('flucsearchstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('flucsearchstatus').innerHTML = error;
+        });
+}
+
+function clearFlucSearch(){
+    document.getElementById('flucsearchstatus').innerText = '';
+    document.getElementById('flucsearchtbody').innerHTML = '';
+}
+
+function getOverboughtRanking(radioVal){
+    clearOverboughtRanking()
+    let date = document.getElementById('overboughtrankingdate').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/overbought?date=' + date +  '&overbought=' + radioVal)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==='0000') {
+                document.getElementById('overboughtrankingstatus').innerText = 'OK'
+                let overboughtrankingtbody = document.getElementById('overboughtrankingtbody');
+                jsonObj['data'].forEach(function (data) {
+                    overboughtrankingtbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '<td>' + data['overbought'] + '</td>' +
+                        '<td>' + data['closing'] + '</td>' +
+                        '<td>' + data['flucPer'] + '</td>' +
+                        '</tr>';
+                });
+            } else {
+                document.getElementById('overboughtrankingstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('overboughtrankingstatus').innerHTML = error;
+        });
+}
+
+function clearOverboughtRanking(){
+    document.getElementById('overboughtrankingstatus').innerText = '';
+    document.getElementById('overboughtrankingtbody').innerHTML = '';
 }

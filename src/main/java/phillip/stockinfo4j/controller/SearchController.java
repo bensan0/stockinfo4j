@@ -3,10 +3,7 @@ package phillip.stockinfo4j.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.model.dto.BasicRes;
-import phillip.stockinfo4j.model.dto.DistributionDTO;
-import phillip.stockinfo4j.model.dto.FiltStockDailyReq;
-import phillip.stockinfo4j.model.dto.SlowlyIncreaseDTO;
+import phillip.stockinfo4j.model.dto.*;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.service.impl.SearchServiceImpl;
@@ -19,6 +16,7 @@ public class SearchController {
 
     @Autowired
     SearchServiceImpl searchService;
+
 
     /**
      * 篩選股票
@@ -64,11 +62,43 @@ public class SearchController {
 
     @GetMapping("slowlyincrease")
     public BasicRes getSlowlyIncrease(@RequestParam Integer date,
-                                      @RequestParam Double flucPercent) {
-        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercent);
+                                      @RequestParam Double flucPercentLL,
+                                      @RequestParam Double flucPercentUL,
+                                      @RequestParam Integer days) {
+        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
         return resp;
     }
 
+    @GetMapping("slowlyincreasetradingvol")
+    public BasicRes getSlowlyIncreaseTradingVol(@RequestParam Integer date,
+                                                @RequestParam Double flucPercentLL,
+                                                @RequestParam Double flucPercentUL,
+                                                @RequestParam Integer days) {
+        List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncreaseTradingVol(date, flucPercentLL, flucPercentUL, days);
+        BasicRes resp = new BasicRes();
+        resp.setData(resultList);
+        return resp;
+    }
+
+    @GetMapping("flucperanddate")
+    public BasicRes getByDateAndFlucPer(@RequestParam Integer date,
+                                        @RequestParam Double flucPercentLL,
+                                        @RequestParam Double flucPercentUL) {
+        List<FlucPercentDTO> resultList = searchService.getByDateAndFlucPer(flucPercentUL, flucPercentLL, date);
+        BasicRes resp = new BasicRes();
+        resp.setData(resultList);
+        return resp;
+    }
+
+    @GetMapping("overbought")
+    public BasicRes getOverboughtRanking(@RequestParam Integer date,
+                                        @RequestParam Integer overbought) {
+
+        BasicRes resp = new BasicRes();
+        List<OverboughtRankingDTO> resultList = searchService.getOverboughtRanking(date, overbought);
+        resp.setData(resultList);
+        return resp;
+    }
 }

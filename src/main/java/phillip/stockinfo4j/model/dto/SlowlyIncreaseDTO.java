@@ -15,6 +15,8 @@ public class SlowlyIncreaseDTO {
     private Double pastPrice;
     private Double nowPrice;
     private String flucPercent;
+    private Long pastTradingVolAvg;
+    private Long nowTradingVol;
 
     public SlowlyIncreaseDTO(StockIndustryDTO dto) {
         this.code = dto.getCode();

@@ -70,7 +70,13 @@
         #corptrans {
             flex-grow: 1;
             flex-shrink: 1;
-            flex-basis: 60%;
+            flex-basis: 40%;
+        }
+
+        #overboughtranking {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 40%;
         }
 
         #searchdistrubution {
@@ -306,33 +312,91 @@
         </div>
     </div>
 
-        <div id="slowlyincrease" name="" class="functionblock parent">
-            <div name="" class="functionblock inputblock">
-                <h4>過去5個交易日內緩漲</h4>
-                <input id="slowlyincreasedate" type="number" min="1" placeholder="日期">
-                <input id="slowlyincreasefluc" type="number" min="0" required="required" placeholder="漲幅(%)">
-                <button onclick="getSlowlyincrease()">執行</button>
-                <button onclick="clearSlowlyincrease()">清除</button>
-                <br>
-                <text id="slowlyincreasestatus"></text>
-            </div>
-            <div id="" name="" class="functionblock tableblock">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col">代號</th>
-                        <th scope="col">名稱</th>
-                        <th scope="col">產業</th>
-                        <th scope="col">過去價格</th>
-                        <th scope="col">現在價格</th>
-                        <th scope="col">漲幅</th>
-                    </tr>
-                    </thead>
-                    <tbody id="slowlyincreasetbody">
-                    </tbody>
-                </table>
-            </div>
+    <div id="flucsearch" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>漲幅查詢</h4>
+            <input id="flucsearchdate" type="number" min="1" placeholder="日期">
+            <input id="flucsearchLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+            <input id="flucsearchUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
+            <button onclick="getFlucSearch()">執行</button>
+            <button onclick="clearFlucSearch()">清除</button>
+            <text id="flucsearchstatus"></text>
         </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">收盤價</th>
+                    <th scope="col">漲跌價差</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="flucsearchtbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="slowlyincrease" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>過去n個交易日內價格緩漲</h4>
+            <input id="slowlyincreasedate" type="number" min="1" placeholder="開始日期">
+            <input id="slowlyincreasedays" type="number" min="1" placeholder="過去日數">
+            <input id="slowlyincreaseflucLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+            <input id="slowlyincreaseflucUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
+            <button onclick="getSlowlyincrease()">執行</button>
+            <button onclick="clearSlowlyincrease()">清除</button>
+            <text id="slowlyincreasestatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">過去平均價格</th>
+                    <th scope="col">現在價格</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="slowlyincreasetbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="slowlyincreaseTradingVol" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>過去n個交易日內成交量緩漲</h4>
+            <input id="slowlyincreaseTradingVoldate" type="number" min="1" placeholder="開始日期">
+            <input id="slowlyincreaseTradingVoldays" type="number" min="1" placeholder="過去日數">
+            <input id="slowlyincreaseTradingVolflucLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+            <input id="slowlyincreaseTradingVolflucUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
+            <button onclick="getSlowlyincreaseTradingVol()">執行</button>
+            <button onclick="clearSlowlyincreaseTradingVol()">清除</button>
+            <text id="slowlyincreaseTradingVolstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">過去平均交易量</th>
+                    <th scope="col">現在交易量</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="slowlyincreaseTradingVoltbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <div id="corptrans" name="" class="functionblock parent">
         <div id="" name="" class="functionblock inputblock">
@@ -362,6 +426,45 @@
                 </tr>
                 </thead>
                 <tbody id="corptranstbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="overboughtranking" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>投信/外資 當日買超前20名</h4>
+            <input id="overboughtrankingdate" type="number" min="1" placeholder="開始日期">
+            <input type="radio" name="overbought" value="0" checked>投信
+            <input type="radio" name="overbought" value="1">外資
+            <button onclick="overboughtCheck()">執行</button>
+            <button onclick="clearOverboughtRanking()">清除</button>
+            <text id="overboughtrankingstatus"></text>
+            <script type="text/javascript">
+                function overboughtCheck() {
+                    let radios = document.getElementsByName('overbought')
+                    let radioLength = radios.length;
+                    for (var i = 0; i < radioLength; i++) {
+                        if (radios[i].checked) {
+                            getOverboughtRanking(radios[i].value)
+                        }
+                    }
+                }
+
+            </script>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">買超</th>
+                    <th scope="col">價格</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="overboughtrankingtbody">
                 </tbody>
             </table>
         </div>

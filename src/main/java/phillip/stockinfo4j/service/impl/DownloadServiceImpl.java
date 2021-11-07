@@ -11,6 +11,7 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.appconfig.BeanConfig;
 import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
 import phillip.stockinfo4j.errorhandle.exceptions.SaveStockDailyFailedException;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
@@ -36,7 +37,7 @@ import java.util.concurrent.ExecutionException;
 public class DownloadServiceImpl implements DownloadService {
 
     @Autowired
-    private ResourceBundle resource;
+    private BeanConfig.Setting setting;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -147,9 +148,9 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     private String downloadTWSEStockDaily(String date) {
-        String targetDir = resource.getString("TempDir");
+        String targetDir = setting.getTempDir();
         String fileName = "TWSEStockDaily" + date + ".csv";
-        String url = resource.getString("TWSEStockDailyUrl") + date;
+        String url = setting.getTWSEStockDailyUrl() + date;
 
         //定義請求頭的接收類型
         RequestCallback requestCallback = request -> {
@@ -237,9 +238,9 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     private String downloadTWSECorpDaily(String date) {
-        String targetDir = resource.getString("TempDir");
+        String targetDir = setting.getTempDir();
         String fileName = "TWSECorpDaily" + date + ".csv";
-        String url = resource.getString("TWSECorpDailyUrl") + date;
+        String url = setting.getTWSECorpDailyUrl() + date;
 
         //定義請求頭的接收類型
         RequestCallback requestCallback = request -> {
@@ -318,10 +319,10 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     private String downloadTPEXStockDaily(String date) {
-        String targetDir = resource.getString("TempDir");
+        String targetDir = setting.getTempDir();
         String fileName = "TPEXStockDaily" + date + ".csv";
         date = Integer.parseInt(date.substring(0, 4)) - 1911 + "/" + date.substring(4, 6) + "/" + date.substring(6, 8);
-        String url = resource.getString("TPEXStockDailyUrl") + date;
+        String url = setting.getTPEXStockDailyUrl() + date;
 
         //定義請求頭的接收類型
         RequestCallback requestCallback = request -> {
@@ -407,10 +408,10 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     private String downloadTPEXCorpDaily(String date) {
-        String targetDir = resource.getString("TempDir");
+        String targetDir = setting.getTempDir();
         String fileName = "TPEXCorpDaily" + date + ".csv";
         date = Integer.parseInt(date.substring(0, 4)) - 1911 + "/" + date.substring(4, 6) + "/" + date.substring(6, 8);
-        String url = resource.getString("TPEXCorpDailyUrl") + date;
+        String url = setting.getTPEXCorpDailyUrl() + date;
 
         //定義請求頭的接收類型
         RequestCallback requestCallback = request -> {
@@ -528,9 +529,9 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     private String downloadDistribution() {
-        String targetDir = resource.getString("TempDir");
+        String targetDir = setting.getTempDir();
         String fileName = "Distribution.csv";
-        String url = resource.getString("DistributionUrl");
+        String url = setting.getDistributionUrl();
 
         //定義請求頭的接收類型
         RequestCallback requestCallback = request -> {
