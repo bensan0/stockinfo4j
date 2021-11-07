@@ -306,6 +306,34 @@
         </div>
     </div>
 
+    <div id="flucsearch" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>漲幅查詢</h4>
+            <input id="flucsearchdate" type="number" min="1" placeholder="日期">
+            <input id="flucsearchLL" type="number" min="0" required="required" placeholder="漲幅底限(%)">
+            <input id="flucsearchUL" type="number" min="0" required="required" placeholder="漲幅上限(%)">
+            <button onclick="getFlucSearch()">執行</button>
+            <button onclick="clearFlucSearch()">清除</button>
+            <text id="flucsearchstatus"></text>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">收盤價</th>
+                    <th scope="col">漲跌價差</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="flucsearchtbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div id="slowlyincrease" name="" class="functionblock parent">
         <div name="" class="functionblock inputblock">
             <h4>過去n個交易日內價格緩漲</h4>

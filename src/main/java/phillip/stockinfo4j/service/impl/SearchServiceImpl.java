@@ -20,6 +20,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SearchServiceImpl implements SearchService {
@@ -354,6 +355,38 @@ public class SearchServiceImpl implements SearchService {
             String formatted = dfmt.format(per * 100);
             slow.setFlucPercent(formatted);
             resultList.add(slow);
+        }
+        return resultList;
+    }
+
+    public List<FlucPercentDTO> getByDateAndFlucPer(Double ul, Double ll, Integer date) {
+        List<FlucPercentDTO> resultList = new ArrayList<>();
+        List<StockDailyTran> tranList = stockDailyRepo.findByflucPerAndDate(ul, ll, date);
+        if(tranList==null||tranList.isEmpty()){
+            return resultList;
+        }
+
+        Map<String,StockDailyTran> tranMap = tranList.stream().collect(Collectors.toMap(tran->tran.getCode(),tran->tran));
+        List<String> codeList = tranList.stream().map(tran->tran.getCode()).collect(Collectors.toList());
+        List<StockIndustryDTO> dtoList;
+        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by a.indust_id";
+        try {
+            dtoList = em.createNativeQuery(qstr, "StockDTOResult")
+                    .setParameter("codeList", codeList)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+        for(StockIndustryDTO dto:dtoList){
+            FlucPercentDTO result = new FlucPercentDTO();
+            result.setCode(dto.getCode());
+            result.setName(dto.getName());
+            result.setIndustry(dto.getIndustry());
+            StockDailyTran tran = tranMap.get(result.getCode());
+            result.setClosing(tran.getClosing());
+            result.setFluc(tran.getFluc());
+            result.setFlucPer(tran.getFlucPer());
+            resultList.add(result);
         }
         return resultList;
     }

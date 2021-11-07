@@ -3,7 +3,6 @@ package phillip.stockinfo4j.model.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import phillip.stockinfo4j.model.dto.SlowlyIncreaseDTO;
 import phillip.stockinfo4j.model.dto.StockIndustryDTO;
 
 import javax.persistence.*;
@@ -18,6 +17,8 @@ import java.io.Serializable;
                         @ColumnResult(name = "industry", type = String.class)
                 })
 })
+
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
