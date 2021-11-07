@@ -3,20 +3,36 @@ package phillip.stockinfo4j.model.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import phillip.stockinfo4j.model.dto.OverboughtRankingDTO;
 import phillip.stockinfo4j.model.dto.StockIndustryDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
-@SqlResultSetMapping(name = "StockDTOResult", classes = {
-        @ConstructorResult(
-                targetClass = StockIndustryDTO.class,
-                columns = {
-                        @ColumnResult(name = "code", type = String.class),
-                        @ColumnResult(name = "name", type = String.class),
-                        @ColumnResult(name = "industry", type = String.class)
-                })
+@SqlResultSetMappings({
+        @SqlResultSetMapping(name = "StockDTOResult", classes = {
+                @ConstructorResult(
+                        targetClass = StockIndustryDTO.class,
+                        columns = {
+                                @ColumnResult(name = "code", type = String.class),
+                                @ColumnResult(name = "name", type = String.class),
+                                @ColumnResult(name = "industry", type = String.class)
+                        })
+        }),
+        @SqlResultSetMapping(name = "OverboughtRankingDTOResult", classes = {
+                @ConstructorResult(
+                        targetClass = OverboughtRankingDTO.class,
+                        columns = {
+                                @ColumnResult(name = "code", type = String.class),
+                                @ColumnResult(name = "name", type = String.class),
+                                @ColumnResult(name = "industry", type = String.class),
+                                @ColumnResult(name = "overbought", type = Long.class),
+                                @ColumnResult(name = "closing", type = Double.class),
+                                @ColumnResult(name = "flucPer", type = Double.class),
+                        })
+        })
 })
+
 
 
 @Data

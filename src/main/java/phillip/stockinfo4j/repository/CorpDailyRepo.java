@@ -14,4 +14,5 @@ public interface CorpDailyRepo extends JpaRepository<CorpDailyTran, Long> {
 
     @Query(value = "select * from corp_daily_trans where date in :dates and code = :code order by date desc",nativeQuery = true)
     List<CorpDailyTran> findByDatesAndCode(@Param("dates") Set<Integer> dates, @Param("code") String code);
+
 }

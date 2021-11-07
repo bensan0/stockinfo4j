@@ -70,7 +70,13 @@
         #corptrans {
             flex-grow: 1;
             flex-shrink: 1;
-            flex-basis: 60%;
+            flex-basis: 40%;
+        }
+
+        #overboughtranking {
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: 40%;
         }
 
         #searchdistrubution {
@@ -420,6 +426,45 @@
                 </tr>
                 </thead>
                 <tbody id="corptranstbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="overboughtranking" name="" class="functionblock parent">
+        <div name="" class="functionblock inputblock">
+            <h4>投信/外資 當日買超前20名</h4>
+            <input id="overboughtrankingdate" type="number" min="1" placeholder="開始日期">
+            <input type="radio" name="overbought" value="0" checked>投信
+            <input type="radio" name="overbought" value="1">外資
+            <button onclick="overboughtCheck()">執行</button>
+            <button onclick="clearOverboughtRanking()">清除</button>
+            <text id="overboughtrankingstatus"></text>
+            <script type="text/javascript">
+                function overboughtCheck() {
+                    let radios = document.getElementsByName('overbought')
+                    let radioLength = radios.length;
+                    for (var i = 0; i < radioLength; i++) {
+                        if (radios[i].checked) {
+                            getOverboughtRanking(radios[i].value)
+                        }
+                    }
+                }
+
+            </script>
+        </div>
+        <div id="" name="" class="functionblock tableblock">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">代號</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">產業</th>
+                    <th scope="col">買超</th>
+                    <th scope="col">價格</th>
+                    <th scope="col">漲幅</th>
+                </tr>
+                </thead>
+                <tbody id="overboughtrankingtbody">
                 </tbody>
             </table>
         </div>

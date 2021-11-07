@@ -25,6 +25,9 @@ import java.util.stream.Collectors;
 @Service
 public class SearchServiceImpl implements SearchService {
 
+    private static final Integer Overbought_TRUST = 0;
+    private static final Integer Overbought_FI = 1;
+
     @Autowired
     StockDailyRepo stockDailyRepo;
 
@@ -362,12 +365,13 @@ public class SearchServiceImpl implements SearchService {
     public List<FlucPercentDTO> getByDateAndFlucPer(Double ul, Double ll, Integer date) {
         List<FlucPercentDTO> resultList = new ArrayList<>();
         List<StockDailyTran> tranList = stockDailyRepo.findByflucPerAndDate(ul, ll, date);
-        if(tranList==null||tranList.isEmpty()){
+        if (tranList == null || tranList.isEmpty()) {
             return resultList;
         }
-
-        Map<String,StockDailyTran> tranMap = tranList.stream().collect(Collectors.toMap(tran->tran.getCode(),tran->tran));
-        List<String> codeList = tranList.stream().map(tran->tran.getCode()).collect(Collectors.toList());
+        System.out.println("tranList:" + tranList);
+        Map<String, StockDailyTran> tranMap = tranList.stream().collect(Collectors.toMap(tran -> tran.getCode(), tran -> tran));
+        System.out.println("tranMap:" + tranMap);
+        List<String> codeList = tranList.stream().map(tran -> tran.getCode()).collect(Collectors.toList());
         List<StockIndustryDTO> dtoList;
         String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by a.indust_id";
         try {
@@ -377,7 +381,7 @@ public class SearchServiceImpl implements SearchService {
         } finally {
             em.close();
         }
-        for(StockIndustryDTO dto:dtoList){
+        for (StockIndustryDTO dto : dtoList) {
             FlucPercentDTO result = new FlucPercentDTO();
             result.setCode(dto.getCode());
             result.setName(dto.getName());
@@ -388,6 +392,30 @@ public class SearchServiceImpl implements SearchService {
             result.setFlucPer(tran.getFlucPer());
             resultList.add(result);
         }
+        return resultList;
+    }
+
+    public List<OverboughtRankingDTO> getOverboughtRanking(Integer date, Integer overbought) {
+        String overboughtGroup;
+        if (overbought == Overbought_TRUST) {
+            overboughtGroup = "investment_trust";
+        } else {
+            overboughtGroup = "foreign_investors";
+        }
+        List<OverboughtRankingDTO> resultList;
+        String qstr = "select a.code as code, a.name as name, b.name as industry, c.closing as closing,c.fluc_percent as flucPer,d." + overboughtGroup + " as overbought" +
+        " from (select * from corp_daily_trans where date = :date order by " + overboughtGroup + " desc limit 20) d" +
+        " join stock_daily_trans c on d.code = c.code and c.date =d.date" +
+        " join stock_basic_info a on d.code = a.code" +
+        " join industry b on a.indust_id = b.id ";
+        try {
+            resultList = em.createNativeQuery(qstr, "OverboughtRankingDTOResult")
+                    .setParameter("date", date)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+
         return resultList;
     }
 }

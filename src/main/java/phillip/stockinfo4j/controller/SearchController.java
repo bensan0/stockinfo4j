@@ -91,4 +91,14 @@ public class SearchController {
         resp.setData(resultList);
         return resp;
     }
+
+    @GetMapping("overbought")
+    public BasicRes getOverboughtRanking(@RequestParam Integer date,
+                                        @RequestParam Integer overbought) {
+
+        BasicRes resp = new BasicRes();
+        List<OverboughtRankingDTO> resultList = searchService.getOverboughtRanking(date, overbought);
+        resp.setData(resultList);
+        return resp;
+    }
 }

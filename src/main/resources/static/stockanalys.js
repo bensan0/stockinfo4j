@@ -631,3 +631,44 @@ function clearFlucSearch(){
     document.getElementById('flucsearchstatus').innerText = '';
     document.getElementById('flucsearchtbody').innerHTML = '';
 }
+
+function getOverboughtRanking(radioVal){
+    clearOverboughtRanking()
+    let date = document.getElementById('overboughtrankingdate').value
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/overbought?date=' + date +  '&overbought=' + radioVal)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==='0000') {
+                document.getElementById('overboughtrankingstatus').innerText = 'OK'
+                let overboughtrankingtbody = document.getElementById('overboughtrankingtbody');
+                jsonObj['data'].forEach(function (data) {
+                    overboughtrankingtbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '<td>' + data['overbought'] + '</td>' +
+                        '<td>' + data['closing'] + '</td>' +
+                        '<td>' + data['flucPer'] + '</td>' +
+                        '</tr>';
+                });
+            } else {
+                document.getElementById('overboughtrankingstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('overboughtrankingstatus').innerHTML = error;
+        });
+}
+
+function clearOverboughtRanking(){
+    document.getElementById('overboughtrankingstatus').innerText = '';
+    document.getElementById('overboughtrankingtbody').innerHTML = '';
+}
