@@ -62,7 +62,6 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    @Async
 //    @Transactional Async下標註@Transactional無效,需要在內部呼叫的方法上標註@Transactional
     public void getDaily(String date) throws ExecutionException, InterruptedException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
@@ -94,7 +93,7 @@ public class DownloadServiceImpl implements DownloadService {
      *
      * @return
      */
-    public void getTWCCDistribution() {
+    public void getTWCCDistribution() throws SaveCorpDailyFailedException{
         String filePath = downloadDistribution();
         List<Distribution> distributionList = filtDistribution(filePath);
         saveDistribution(distributionList);
@@ -615,7 +614,7 @@ public class DownloadServiceImpl implements DownloadService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveDistribution(List<Distribution> distributionList) {
+    public void saveDistribution(List<Distribution> distributionList) throws SaveCorpDailyFailedException{
         System.out.println("儲存distribution開始");
         long l1 = System.currentTimeMillis();
         distributionList = distributionRepo.saveAll(distributionList);

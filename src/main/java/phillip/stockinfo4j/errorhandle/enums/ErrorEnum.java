@@ -14,6 +14,7 @@ public enum ErrorEnum implements IBaseErrorInfo {
     ThreadInterrupted("0006", "執行緒中斷"),
     FailedSave("0007", "持久化異常"),
     FailedToDeleteFile("0008", "刪除檔案錯誤"),
+    InValidParam("0009","參數異常"),
     ;
 
     private final String code;
