@@ -657,6 +657,7 @@ function getOverboughtRanking(radioVal){
                         '<td>' + data['overbought'] + '</td>' +
                         '<td>' + data['closing'] + '</td>' +
                         '<td>' + data['flucPer'] + '</td>' +
+                        '<td>' + data['tradingAmount'] + '</td>' +
                         '</tr>';
                 });
             } else {

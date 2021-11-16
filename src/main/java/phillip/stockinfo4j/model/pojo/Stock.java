@@ -29,6 +29,7 @@ import java.io.Serializable;
                                 @ColumnResult(name = "overbought", type = Long.class),
                                 @ColumnResult(name = "closing", type = Double.class),
                                 @ColumnResult(name = "flucPer", type = Double.class),
+                                @ColumnResult(name = "tradingAmount", type=Double.class)
                         })
         })
 })
