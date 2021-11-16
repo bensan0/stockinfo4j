@@ -403,11 +403,13 @@ public class SearchServiceImpl implements SearchService {
             overboughtGroup = "foreign_investors";
         }
         List<OverboughtRankingDTO> resultList;
-        String qstr = "select a.code as code, a.name as name, b.name as industry, c.closing as closing,c.fluc_percent as flucPer,d." + overboughtGroup + " as overbought" +
-        " from (select * from corp_daily_trans where date = :date order by " + overboughtGroup + " desc limit 20) d" +
-        " join stock_daily_trans c on d.code = c.code and c.date =d.date" +
-        " join stock_basic_info a on d.code = a.code" +
-        " join industry b on a.indust_id = b.id ";
+        String qstr =
+                "select a.code as code, a.name as name, b.name as industry, c.closing as closing, c.fluc_percent as flucPer, d." + overboughtGroup + " as overbought, TRUNCATE(((c.trading_amount / c.trading_vol)*d." + overboughtGroup + ")/1000000,2) as tradingAmount" +
+                " from (select * from corp_daily_trans where date = :date) d" +
+                " join stock_daily_trans c on d.code = c.code and c.date =d.date" +
+                " join stock_basic_info a on d.code = a.code" +
+                " join industry b on a.indust_id = b.id" +
+                " order by tradingAmount desc limit 20";
         try {
             resultList = em.createNativeQuery(qstr, "OverboughtRankingDTOResult")
                     .setParameter("date", date)
