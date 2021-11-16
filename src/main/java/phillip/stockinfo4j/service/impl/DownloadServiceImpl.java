@@ -62,7 +62,6 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    @Async
 //    @Transactional Async下標註@Transactional無效,需要在內部呼叫的方法上標註@Transactional
     public void getDaily(String date) throws ExecutionException, InterruptedException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
@@ -94,7 +93,7 @@ public class DownloadServiceImpl implements DownloadService {
      *
      * @return
      */
-    public void getTWCCDistribution() {
+    public void getTWCCDistribution() throws SaveCorpDailyFailedException{
         String filePath = downloadDistribution();
         List<Distribution> distributionList = filtDistribution(filePath);
         saveDistribution(distributionList);
@@ -105,8 +104,10 @@ public class DownloadServiceImpl implements DownloadService {
      */
     @Async
     public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) {
+        System.out.println(Thread.currentThread().getName() + " TWSEStock start");
         String filePath = downloadTWSEStockDaily(date);
         List<StockDailyTran> tranList = filtTWSEStockDaily(filePath);
+        System.out.println(Thread.currentThread().getName() + " TWSECorp finish");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -115,8 +116,10 @@ public class DownloadServiceImpl implements DownloadService {
      */
     @Async
     public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) {
+        System.out.println(Thread.currentThread().getName() + " TWSECorp start");
         String filePath = downloadTWSECorpDaily(date);
         List<CorpDailyTran> tranList = filtTWSECorpDaily(filePath);
+        System.out.println(Thread.currentThread().getName() + " TWSECorp finish");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -125,8 +128,10 @@ public class DownloadServiceImpl implements DownloadService {
      */
     @Async
     public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) {
+        System.out.println(Thread.currentThread().getName() + " TPEXStock start");
         String filePath = downloadTPEXStockDaily(date);
         List<StockDailyTran> tranList = filtTPEXStockDaily(filePath);
+        System.out.println(Thread.currentThread().getName() + " TPEXStock finish");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -135,8 +140,10 @@ public class DownloadServiceImpl implements DownloadService {
      */
     @Async
     public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) {
+        System.out.println(Thread.currentThread().getName() + " TPEXCorp start");
         String filePath = downloadTPEXCorpDaily(date);
         List<CorpDailyTran> tranList = filtTPEXCorpDaily(filePath);
+        System.out.println(Thread.currentThread().getName() + " TPEXCorp finish");
         return CompletableFuture.completedFuture(tranList);
     }
 
@@ -205,6 +212,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setName(split1[1].trim());
                 tran.setTradingVol(DownloadUtils.parseStrToDouble(split1[2].replace(",", "").trim()).longValue() / 1000);
                 tran.setDeal(DownloadUtils.parseStrToDouble(split1[3].replace(",", "").trim()).longValue());
+                tran.setTradingAmount(DownloadUtils.parseStrToLong(split1[4].replace(",","").trim()));
                 tran.setOpening(DownloadUtils.parseStrToDouble(split1[5].replace(",", "").trim()));
                 tran.setHighest(DownloadUtils.parseStrToDouble(split1[6].replace(",", "").trim()));
                 tran.setLowest(DownloadUtils.parseStrToDouble(split1[7].replace(",", "").trim()));
@@ -386,6 +394,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setHighest(DownloadUtils.parseStrToDouble(split1[5].trim().replace(",", "")));
                 tran.setLowest(DownloadUtils.parseStrToDouble(split1[6].trim().replace(",", "")));
                 tran.setTradingVol(DownloadUtils.parseStrToLong(split1[8].trim().replace(",", "")) / 1000);
+                tran.setTradingAmount(DownloadUtils.parseStrToLong(split1[9].trim().replace(",", "")));
                 tran.setDeal(DownloadUtils.parseStrToLong(split1[10].trim().replace(",", "")));
                 Double yesterdayClosing = tran.getClosing();
                 tran.setFlucPer(DownloadUtils.parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
@@ -615,7 +624,7 @@ public class DownloadServiceImpl implements DownloadService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveDistribution(List<Distribution> distributionList) {
+    public void saveDistribution(List<Distribution> distributionList) throws SaveCorpDailyFailedException{
         System.out.println("儲存distribution開始");
         long l1 = System.currentTimeMillis();
         distributionList = distributionRepo.saveAll(distributionList);
