@@ -20,9 +20,8 @@ public class SearchController {
     SearchServiceImpl searchService;
 
 
-    /**
+    /***
      * 篩選股票
-     *
      * @param req
      * @return
      */
@@ -35,6 +34,12 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 獲取個股交易資訊
+     * @param days
+     * @param code
+     * @return
+     */
     @GetMapping("stocktran")
     public BasicRes getDaysStock(@RequestParam(defaultValue = "5") Integer days,
                                  @RequestParam String code){
@@ -47,6 +52,12 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 獲取法人交易資訊
+     * @param days
+     * @param code
+     * @return
+     */
     @GetMapping("corptran")
     public BasicRes getDaysCorp(@RequestParam(defaultValue = "5") Integer days,
                                 @RequestParam String code) {
@@ -59,6 +70,12 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 股權分佈
+     * @param weeks
+     * @param code
+     * @return
+     */
     @GetMapping("distribution")
     public BasicRes getWeeksDistrubution(@RequestParam(defaultValue = "4") Integer weeks,
                                          @RequestParam String code) {
@@ -71,6 +88,14 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 價格緩漲
+     * @param date
+     * @param flucPercentLL
+     * @param flucPercentUL
+     * @param days
+     * @return
+     */
     @GetMapping("slowlyincrease")
     public BasicRes getSlowlyIncrease(@RequestParam Integer date,
                                       @RequestParam Double flucPercentLL,
@@ -87,6 +112,14 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 成交量緩漲
+     * @param date
+     * @param flucPercentLL
+     * @param flucPercentUL
+     * @param days
+     * @return
+     */
     @GetMapping("slowlyincreasetradingvol")
     public BasicRes getSlowlyIncreaseTradingVol(@RequestParam Integer date,
                                                 @RequestParam Double flucPercentLL,
@@ -103,6 +136,13 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 漲幅查詢
+     * @param date
+     * @param flucPercentLL
+     * @param flucPercentUL
+     * @return
+     */
     @GetMapping("flucperanddate")
     public BasicRes getByDateAndFlucPer(@RequestParam Integer date,
                                         @RequestParam Double flucPercentLL,
@@ -115,6 +155,12 @@ public class SearchController {
         return resp;
     }
 
+    /***
+     * 投信/外資買超排行
+     * @param date
+     * @param overbought
+     * @return
+     */
     @GetMapping("overbought")
     public BasicRes getOverboughtRanking(@RequestParam Integer date,
                                         @RequestParam Integer overbought) {
@@ -122,6 +168,22 @@ public class SearchController {
         DownloadUtils.isDateConform(date.toString());
         BasicRes resp = new BasicRes();
         List<OverboughtRankingDTO> resultList = searchService.getOverboughtRanking(date, overbought);
+        resp.setData(resultList);
+        return resp;
+    }
+
+    /***
+     * 尋找大黑K
+     * @param date
+     * @return
+     */
+    @GetMapping("bigblackk")
+    public BasicRes getBigBlackK(@RequestParam Integer date){
+        System.out.println("date:" + date);
+        DownloadUtils.isDateSaturdayOrSunday(date.toString());
+        DownloadUtils.isDateConform(date.toString());
+        BasicRes resp = new BasicRes();
+        List<FiltStockDailyDTO> resultList = searchService.getBlackKLine(date);
         resp.setData(resultList);
         return resp;
     }

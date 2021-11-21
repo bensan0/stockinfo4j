@@ -104,12 +104,12 @@ function getDistribution() {
 
 function filtTradingvol() {
     clearFilter();
-    console.log('filterlowerpercent:' + document.getElementById('filterlowerpercent').value)
+    console.log('filterdate:' + document.getElementById('filterdate').value + ';' + document.getElementById('filterdate').innerText + ';' + document.getElementById('filterdate').innerHTML)
     let req = new Request('http://127.0.0.1:8081/stockinfo4j/search/filtstockdaily',
         {
             method: 'POST',
             body: (JSON.stringify({
-                date: document.getElementById('filterdate').innerText,
+                date: document.getElementById('filterdate').value,
                 tradingVolFlucPercentLL: document.getElementById('filterlowerpercent').value,
                 tradingVolFlucPercentUL:document.getElementById('filterhigherpercent').value,
                 yesterdayTradingVolLL:document.getElementById('filterlowervol').value,
@@ -672,4 +672,56 @@ function getOverboughtRanking(radioVal){
 function clearOverboughtRanking(){
     document.getElementById('overboughtrankingstatus').innerText = '';
     document.getElementById('overboughtrankingtbody').innerHTML = '';
+}
+
+function getBigBlackK() {
+    clearBigBlackK()
+
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/bigblackk?date=' + document.getElementById('bigblackkdate').value)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==="0000") {
+                document.getElementById('bigblackkstatus').innerHTML = 'OK';
+                let bigBlackKtbody = document.getElementById('bigblackktbody');
+                let bigBlackKTranstbody = document.getElementById('bigblackktranstbody');
+                jsonObj['data'].forEach(function (data) {
+                    bigBlackKtbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '</tr>';
+
+                    data['tranList'].forEach(function (datatrans) {
+                        bigBlackKTranstbody.innerHTML += '<tr>' +
+                            '<th scope="row">' + datatrans['code'] + '</th>' +
+                            '<td>' + datatrans['name'] + '</td>' +
+                            '<td>' + datatrans['tradingVol'] + '</td>' +
+                            '<td>' + datatrans['opening'] + '</td>' +
+                            '<td>' + datatrans['closing'] + '</td>' +
+                            '<td>' + datatrans['flucPer'] + '</td>' +
+                            '<td>' + datatrans['date'] + '</td>' +
+                            '</tr>';
+                    });
+                });
+            } else {
+                document.getElementById('bigblackkstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('bigblackkstatus').innerHTML = error;
+        });
+}
+
+function clearBigBlackK(){
+    document.getElementById('bigblackktbody').innerHTML=''
+    document.getElementById('bigblackktranstbody').innerHTML=''
+    document.getElementById('bigblackkstatus').innerHTML=''
 }
