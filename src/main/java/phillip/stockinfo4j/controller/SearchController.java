@@ -3,13 +3,11 @@ package phillip.stockinfo4j.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import phillip.stockinfo4j.Utils.DownloadUtils;
-import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.errorhandle.exceptions.InvalidParamException;
 import phillip.stockinfo4j.model.dto.*;
-import phillip.stockinfo4j.model.pojo.CorpDailyTran;
-import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.service.impl.SearchServiceImpl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -27,9 +25,15 @@ public class SearchController {
      */
     @PostMapping("filtstockdaily")
     public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) {
+        System.out.println("req: " + req);
         BasicRes resp = new BasicRes();
-        DownloadUtils.isDateSaturdayOrSunday(req.getDate());
-        DownloadUtils.isDateConform(req.getDate());
+        if (DownloadUtils.isDateSaturdayOrSunday(req.getDate()) || !DownloadUtils.isDateConform(req.getDate())) {
+            throw new InvalidParamException();
+        }
+
+        if (DownloadUtils.isDateAfterToday(req.getDate())) {
+            req.setDate(LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd")));
+        }
         resp.setData(searchService.filtStockDaily(req));
         return resp;
     }
@@ -42,12 +46,12 @@ public class SearchController {
      */
     @GetMapping("stocktran")
     public BasicRes getDaysStock(@RequestParam(defaultValue = "5") Integer days,
-                                 @RequestParam String code){
-        if(days>366){
+                                 @RequestParam String code) {
+        if (days > 366) {
             throw new InvalidParamException();
         }
         BasicRes resp = new BasicRes();
-        List<StockDailyTran> resultList = searchService.getDaysStock(days, code);
+        List<DailyTranDTO> resultList = searchService.getDaysStockAndCorp(days, code);
         resp.setData(resultList);
         return resp;
     }
@@ -61,11 +65,11 @@ public class SearchController {
     @GetMapping("corptran")
     public BasicRes getDaysCorp(@RequestParam(defaultValue = "5") Integer days,
                                 @RequestParam String code) {
-        if(days>366){
+        if (days > 366) {
             throw new InvalidParamException();
         }
         BasicRes resp = new BasicRes();
-        List<CorpDailyTran> resultList = searchService.getDaysCorp(days, code);
+        List<DailyTranDTO> resultList = searchService.getDaysStockAndCorp(days, code);
         resp.setData(resultList);
         return resp;
     }
@@ -79,7 +83,7 @@ public class SearchController {
     @GetMapping("distribution")
     public BasicRes getWeeksDistrubution(@RequestParam(defaultValue = "4") Integer weeks,
                                          @RequestParam String code) {
-        if(weeks>52){
+        if (weeks > 52) {
             throw new InvalidParamException();
         }
         BasicRes resp = new BasicRes();
@@ -101,11 +105,10 @@ public class SearchController {
                                       @RequestParam Double flucPercentLL,
                                       @RequestParam Double flucPercentUL,
                                       @RequestParam Integer days) {
-        if(days>366){
+        if (days > 366 || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !DownloadUtils.isDateConform(date.toString())) {
             throw new InvalidParamException();
         }
-        DownloadUtils.isDateSaturdayOrSunday(date.toString());
-        DownloadUtils.isDateConform(date.toString());
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
@@ -125,11 +128,10 @@ public class SearchController {
                                                 @RequestParam Double flucPercentLL,
                                                 @RequestParam Double flucPercentUL,
                                                 @RequestParam Integer days) {
-        if(days>366){
+        if (days > 366 || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !DownloadUtils.isDateConform(date.toString())) {
             throw new InvalidParamException();
         }
-        DownloadUtils.isDateSaturdayOrSunday(date.toString());
-        DownloadUtils.isDateConform(date.toString());
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncreaseTradingVol(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
@@ -147,8 +149,10 @@ public class SearchController {
     public BasicRes getByDateAndFlucPer(@RequestParam Integer date,
                                         @RequestParam Double flucPercentLL,
                                         @RequestParam Double flucPercentUL) {
-        DownloadUtils.isDateSaturdayOrSunday(date.toString());
-        DownloadUtils.isDateConform(date.toString());
+        if (DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !DownloadUtils.isDateConform(date.toString())) {
+            throw new InvalidParamException();
+        }
         List<FlucPercentDTO> resultList = searchService.getByDateAndFlucPer(flucPercentUL, flucPercentLL, date);
         BasicRes resp = new BasicRes();
         resp.setData(resultList);
@@ -163,9 +167,11 @@ public class SearchController {
      */
     @GetMapping("overbought")
     public BasicRes getOverboughtRanking(@RequestParam Integer date,
-                                        @RequestParam Integer overbought) {
-        DownloadUtils.isDateSaturdayOrSunday(date.toString());
-        DownloadUtils.isDateConform(date.toString());
+                                         @RequestParam Integer overbought) {
+        if (DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !DownloadUtils.isDateConform(date.toString())) {
+            throw new InvalidParamException();
+        }
         BasicRes resp = new BasicRes();
         List<OverboughtRankingDTO> resultList = searchService.getOverboughtRanking(date, overbought);
         resp.setData(resultList);
@@ -178,10 +184,11 @@ public class SearchController {
      * @return
      */
     @GetMapping("bigblackk")
-    public BasicRes getBigBlackK(@RequestParam Integer date){
-        System.out.println("date:" + date);
-        DownloadUtils.isDateSaturdayOrSunday(date.toString());
-        DownloadUtils.isDateConform(date.toString());
+    public BasicRes getBigBlackK(@RequestParam Integer date) {
+        if (DownloadUtils.isDateAfterToday(date.toString()) || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !DownloadUtils.isDateConform(date.toString())) {
+            throw new InvalidParamException();
+        }
         BasicRes resp = new BasicRes();
         List<FiltStockDailyDTO> resultList = searchService.getBlackKLine(date);
         resp.setData(resultList);

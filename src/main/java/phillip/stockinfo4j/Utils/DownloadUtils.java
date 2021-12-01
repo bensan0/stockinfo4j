@@ -64,9 +64,9 @@ public class DownloadUtils {
             throw new DateParseException(ErrorEnum.DateFormatNotAllowed, e.getMessage());
         }
         if(localDate.getDayOfWeek()==DayOfWeek.SUNDAY||localDate.getDayOfWeek()==DayOfWeek.SATURDAY){
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -94,6 +94,7 @@ public class DownloadUtils {
         }
         return true;
     }
+
 
     /**
      * 刪除檔案
@@ -164,5 +165,18 @@ public class DownloadUtils {
     public static DateTimeFormatter getDateTimeFormatter(String pattern){
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern(pattern);
         return fmt;
+    }
+
+    /***
+     *
+     * @param yyyyMMdd
+     * @return
+     */
+    public static boolean isDateAfterToday(String yyyyMMdd){
+        LocalDate inputDate = LocalDate.parse(yyyyMMdd, getDateTimeFormatter("yyyyMMdd"));
+        if(inputDate.isAfter(LocalDate.now())){
+            return true;
+        }
+        return false;
     }
 }

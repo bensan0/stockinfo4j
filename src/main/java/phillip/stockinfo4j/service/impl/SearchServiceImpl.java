@@ -1,12 +1,11 @@
 package phillip.stockinfo4j.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.model.dto.*;
-import phillip.stockinfo4j.model.pojo.CorpDailyTran;
-import phillip.stockinfo4j.model.pojo.StockDailyTran;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
 import phillip.stockinfo4j.repository.DistributionRepo;
 import phillip.stockinfo4j.repository.StockDailyRepo;
@@ -14,19 +13,18 @@ import phillip.stockinfo4j.service.SearchService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchServiceImpl implements SearchService {
 
     private static final Integer Overbought_TRUST = 0;
     private static final Integer Overbought_FI = 1;
+    private static final String Ranking = "Ranking";
 
     @Autowired
     StockDailyRepo stockDailyRepo;
@@ -40,11 +38,13 @@ public class SearchServiceImpl implements SearchService {
     @PersistenceContext
     EntityManager em;
 
-    /**
+    @Autowired
+    CacheServiceImpl cacheService;
+
+    /***
      * 篩選特定條件
-     *
      * @param req
-     * @return
+     * @return List<FiltStockDailyDTO>
      */
     public List<FiltStockDailyDTO> filtStockDaily(FiltStockDailyReq req) {
         //尋找輸入日期的上個交易日
@@ -61,97 +61,52 @@ public class SearchServiceImpl implements SearchService {
                 break;
             }
         }
+        //查詢今昨所有交易
         dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
         dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
-        List<StockDailyTran> tranList = stockDailyRepo.findByDates(dates);
+        Map<String, Map<String, DailyTranDTO>> multiDatesTrans = cacheService.getMultiDatesTrans(dates);
+        System.out.println("dates: " + dates);
+        ;
+        Map<String, DailyTranDTO> todayMap = multiDatesTrans.get(today.format(fmt));
+        System.out.println("today: " + todayMap);
+        Map<String, DailyTranDTO> yesterdayMap = multiDatesTrans.get(yesterday.format(fmt));
+        System.out.println("today: " + yesterdayMap);
 
-        //查詢今昨所有交易
-        Map<String, StockDailyTran> todayMap = new HashMap<>();
-        Map<String, StockDailyTran> yesterdayMap = new HashMap<>();
-        for (StockDailyTran tran : tranList) {
-            if (tran.getDate().toString().equals(date)) {
-                todayMap.put(tran.getCode(), tran);
-            } else {
-                yesterdayMap.put(tran.getCode(), tran);
-            }
-        }
         //篩選出符合條件股的code
-        List<String> codeList = new ArrayList<>();
-        todayMap.forEach((code, todayTran) -> {
-            StockDailyTran yesterdayTran = yesterdayMap.get(code);
-            if (yesterdayTran == null) {
+        List<FiltStockDailyDTO> resultList = new ArrayList<>();
+        todayMap.forEach((code, todayDTO) -> {
+            DailyTranDTO yesterdayDTO = yesterdayMap.get(code);
+            if (yesterdayDTO == null) {
                 return;
             }
-            boolean isTVLLConfirm = todayTran.getTradingVol().doubleValue() >= yesterdayTran.getTradingVol().doubleValue() * (1.00 + req.getTradingVolFlucPercentLL());
-            boolean isTVULConfirm = todayTran.getTradingVol().doubleValue() <= yesterdayTran.getTradingVol().doubleValue() * req.getTradingVolFlucPercentUL();
-            boolean isYTVLLConfirm = yesterdayTran.getTradingVol() >= req.getYesterdayTradingVolLL();
-            boolean isYTVULConfirm = yesterdayTran.getTradingVol() <= req.getYesterdayTradingVolUL();
-            boolean isTCULConfirm = todayTran.getClosing() <= req.getTodayClosingUL();
+            boolean isTVLLConfirm = todayDTO.getTradingVol().doubleValue() >= yesterdayDTO.getTradingVol().doubleValue() * (1.00 + req.getTradingVolFlucPercentLL());
+            boolean isTVULConfirm = todayDTO.getTradingVol().doubleValue() <= yesterdayDTO.getTradingVol().doubleValue() * req.getTradingVolFlucPercentUL();
+            boolean isYTVLLConfirm = yesterdayDTO.getTradingVol() >= req.getYesterdayTradingVolLL();
+            boolean isYTVULConfirm = yesterdayDTO.getTradingVol() <= req.getYesterdayTradingVolUL();
+            boolean isTCULConfirm = todayDTO.getClosing() <= req.getTodayClosingUL();
             if (isTCULConfirm && isTVLLConfirm && isTVULConfirm && isYTVULConfirm && isYTVLLConfirm) {
-                codeList.add(todayTran.getCode());
+                FiltStockDailyDTO result = new FiltStockDailyDTO();
+                result.setCode(todayDTO.getCode());
+                result.setIndustry(todayDTO.getIndustry());
+                result.setName(todayDTO.getName());
+                result.getTranList().add(todayDTO);
+                result.getTranList().add(yesterdayDTO);
+                resultList.add(result);
             }
         });
-
-        //利用code查詢出DTO(含code,name,業種)
-        List<StockIndustryDTO> dtoList;
-        try {
-            String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList";
-            Query query = em.createNativeQuery(qstr, "StockDTOResult").setParameter("codeList", codeList);
-            dtoList = query.getResultList();
-        } finally {
-            em.close();
-        }
-
-        //DTO填入今昨交易
-        List<FiltStockDailyDTO> resultList = new ArrayList<>();
-        for (StockIndustryDTO dto : dtoList) {
-            FiltStockDailyDTO filtDTO = new FiltStockDailyDTO(dto);
-            filtDTO.getTranList().add(todayMap.get(dto.getCode()));
-            filtDTO.getTranList().add(yesterdayMap.get(dto.getCode()));
-            resultList.add(filtDTO);
-        }
-        //回傳List<DTO>
-        return resultList;
-    }
-
-    /**
-     * 獲取天數個股交易
-     *
-     * @param days
-     * @param code
-     * @return
-     */
-    public List<StockDailyTran> getDaysStock(Integer days, String code) {
-        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
-        LocalDate today = LocalDate.now();
-        Set<Integer> dates = new HashSet<>();
-        dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
-        LocalDate yesterday = today.minusDays(1);
-        while (true) {
-            if (dates.size() == days) {
-                break;
-            }
-            if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY || yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
-                yesterday = yesterday.minusDays(1);
-                continue;
-            }
-            dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
-            yesterday = yesterday.minusDays(1);
-        }
-        List<StockDailyTran> resultList = stockDailyRepo.findByDatesAndCode(dates, code);
         return resultList;
     }
 
     /***
-     * 獲取天數法人交易
+     * 獲取天數個股+法人交易
      * @param days
      * @param code
-     * @return
+     * @return List<DailyTranDTO>
      */
-    public List<CorpDailyTran> getDaysCorp(Integer days, String code) {
+    public List<DailyTranDTO> getDaysStockAndCorp(Integer days, String code) {
         DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
         LocalDate today = LocalDate.now();
-        Set<Integer> dates = new HashSet<>();
+        List<Integer> dates = new ArrayList<>();
         dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
         LocalDate yesterday = today.minusDays(1);
         while (true) {
@@ -165,8 +120,20 @@ public class SearchServiceImpl implements SearchService {
             dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
             yesterday = yesterday.minusDays(1);
         }
+        List<DailyTranDTO> resultList = new ArrayList<>();
+        Map<String, Map<String, DailyTranDTO>> multiDatesTrans = cacheService.getMultiDatesTrans(dates);
+        multiDatesTrans.forEach((date, map) -> {
+            resultList.add(map.get(code));
+        });
+        resultList.removeAll(Collections.singleton(null));
 
-        List<CorpDailyTran> resultList = corpDailyRepo.findByDatesAndCode(dates, code);
+        Collections.sort(resultList, (dto1, dto2) -> {
+            if (dto1.getDate().intValue() > dto2.getDate().intValue()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
         return resultList;
     }
 
@@ -178,19 +145,13 @@ public class SearchServiceImpl implements SearchService {
      */
     @Transactional(rollbackFor = Exception.class)
     public List<DistributionDTO> getWeeksDistribution(Integer weeks, String code) {
-        String qstr = "select a.code as code, b.name as name, a.rate11 as rate11, a.rate12 as rate12, a.rate13 as rate13, a.rate14 as rate14, a.rate15 as rate15, a.total as total, a.date as `date` " +
-                "from ownership_distribution a, stock_basic_info b " +
-                "where a.code = :code and a.code = b.code " +
-                "order by date desc limit :weeks";
-        List<DistributionDTO> resultList;
-
-        try {
-            resultList = em.createNativeQuery(qstr, "DistributionDTOResult")
-                    .setParameter("code", code)
-                    .setParameter("weeks", weeks)
-                    .getResultList();
-        } finally {
-            em.close();
+        List<DistributionDTO> resultList = new ArrayList<>();
+        List<DistributionDTO> distributionDTOS = cacheService.cacheDistribution(code);
+        if (distributionDTOS.size() < weeks) {
+            weeks = distributionDTOS.size();
+        }
+        for (int i = 0; i < weeks; i++) {
+            resultList.add(distributionDTOS.get(i));
         }
         return resultList;
     }
@@ -223,72 +184,58 @@ public class SearchServiceImpl implements SearchService {
             }
         }
 
-        List<StockDailyTran> tranList = stockDailyRepo.findByDates(dates);
-        Map<String, StockDailyTran> startDateMap = new HashMap<>();
-        Map<String, List<StockDailyTran>> pastDaysMap = new HashMap<>();
-        for (StockDailyTran tran : tranList) {
-            if (tran.getDate().toString().equals(startDate.format(fmt))) {
-                startDateMap.put(tran.getCode(), tran);
-            } else {
-                if (pastDaysMap.get(tran.getCode()) == null) {
-                    List<StockDailyTran> list = new ArrayList<>();
-                    list.add(tran);
-                    pastDaysMap.put(tran.getCode(), list);
-                } else {
-                    pastDaysMap.get(tran.getCode()).add(tran);
+        Map<String, Map<String, DailyTranDTO>> dateTranMap = cacheService.getMultiDatesTrans(dates);//{"20211010":{"0050":...,"0051":...}}
+        Map<String, DailyTranDTO> startDateTranMap = dateTranMap.get(date.toString());//{"0050":...,"0051":...}
+
+        //建立代號->過去收盤價Map
+        Map<String, List<Double>> pastDaysClosingMap = new HashMap<>();
+        dateTranMap.forEach((dateStr, map) -> {
+            if (dateStr.equals(date.toString())) {
+                return;
+            }
+            Set<Map.Entry<String, DailyTranDTO>> entries = map.entrySet();
+            for (Map.Entry<String, DailyTranDTO> entry : entries) {
+                if (pastDaysClosingMap.get(entry.getKey()) == null && entry.getValue().getClosing() > 0.0) {
+                    List<Double> list = new ArrayList<>();
+                    list.add(entry.getValue().getClosing());
+                    pastDaysClosingMap.put(entry.getKey(), list);
+                } else if (pastDaysClosingMap.get(entry.getKey()) != null && entry.getValue().getClosing() > 0.0) {
+                    pastDaysClosingMap.get(entry.getKey()).add(entry.getValue().getClosing());
                 }
             }
-        }
-        Set<String> codeList = new HashSet<>();
-        Map<String, Double> pastDaysAvgPrice = new HashMap<>();
-        startDateMap.forEach((code, startDateTran) -> {
-            List<StockDailyTran> pastDaysTranList = pastDaysMap.get(code);
-            if (pastDaysTranList == null || pastDaysTranList.isEmpty()) {
+        });
+
+        //比對本日收盤與過去均價收盤
+        List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
+        DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
+        startDateTranMap.forEach((code, startDateTran) -> {
+            List<Double> pastDaysClosingList = pastDaysClosingMap.get(code);
+            if (pastDaysClosingList == null || pastDaysClosingList.isEmpty()) {
                 return;
             }
 
             Double pastAvgPrice = 0.00;
             Double total = 0.00;
-            Integer effectiveDays = 0;
-            for (StockDailyTran pastDaysTran : pastDaysTranList) {
-                if (pastDaysTran.getClosing() != 0.00) {
-                    total += pastDaysTran.getClosing();
-                    effectiveDays++;
-                }
+            Integer period = pastDaysClosingList.size();
+            for (Double pastClosing : pastDaysClosingList) {
+                total += pastClosing;
             }
-            if (total != 0.00) {
-                pastAvgPrice = total / effectiveDays;
-            } else {
-                return;
-            }
+            pastAvgPrice = total / period;
 
             Double startDateClosing = startDateTran.getClosing();
             if (startDateClosing >= (pastAvgPrice * (1 + flucPerLL / 100)) && startDateClosing <= (pastAvgPrice * (1 + flucPerUL / 100))) {
-                codeList.add(code);
-                pastDaysAvgPrice.put(code, pastAvgPrice);
+                SlowlyIncreaseDTO slow = new SlowlyIncreaseDTO();
+                slow.setCode(startDateTran.getCode());
+                slow.setName(startDateTran.getName());
+                slow.setIndustry(startDateTran.getIndustry());
+                slow.setNowPrice(startDateTran.getClosing());
+                slow.setPastPrice(new Double(dfmt.format(pastAvgPrice)));
+                Double per = (slow.getNowPrice() - slow.getPastPrice()) / slow.getPastPrice();
+                String formatted = dfmt.format(per * 100);
+                slow.setFlucPercent(formatted);
+                resultList.add(slow);
             }
         });
-        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by code";
-        List<StockIndustryDTO> dtoList;
-        try {
-            dtoList = em.createNativeQuery(qstr, "StockDTOResult")
-                    .setParameter("codeList", codeList)
-                    .getResultList();
-        } finally {
-            em.close();
-        }
-        List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
-        DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
-
-        for (StockIndustryDTO dto : dtoList) {
-            SlowlyIncreaseDTO slow = new SlowlyIncreaseDTO(dto);
-            slow.setNowPrice(startDateMap.get(slow.getCode()).getClosing());
-            slow.setPastPrice(Double.parseDouble(dfmt.format(pastDaysAvgPrice.get(slow.getCode()))));
-            Double per = (slow.getNowPrice() - slow.getPastPrice()) / slow.getPastPrice();
-            String formatted = dfmt.format(per * 100);
-            slow.setFlucPercent(formatted);
-            resultList.add(slow);
-        }
         return resultList;
     }
 
@@ -320,72 +267,59 @@ public class SearchServiceImpl implements SearchService {
             }
         }
 
-        List<StockDailyTran> tranList = stockDailyRepo.findByDates(dates);
-        Map<String, StockDailyTran> startDateMap = new HashMap<>();
-        Map<String, List<StockDailyTran>> pastDaysMap = new HashMap<>();
-        for (StockDailyTran tran : tranList) {
-            if (tran.getDate().toString().equals(startDate.format(fmt))) {
-                startDateMap.put(tran.getCode(), tran);
-            } else {
-                if (pastDaysMap.get(tran.getCode()) == null) {
-                    List<StockDailyTran> list = new ArrayList<>();
-                    list.add(tran);
-                    pastDaysMap.put(tran.getCode(), list);
-                } else {
-                    pastDaysMap.get(tran.getCode()).add(tran);
-                }
-            }
-        }
-        Set<String> codeList = new HashSet<>();
-        Map<String, Long> pastDaysAvgTradingVol = new HashMap<>();
-        startDateMap.forEach((code, startDateTran) -> {
-            List<StockDailyTran> pastDaysTranList = pastDaysMap.get(code);
-            if (pastDaysTranList == null || pastDaysTranList.isEmpty()) {
+        Map<String, Map<String, DailyTranDTO>> dateTranMap = cacheService.getMultiDatesTrans(dates);//{"20211010":{"0050":...,"0051":...}}
+        Map<String, DailyTranDTO> startDateTranMap = dateTranMap.get(date.toString());//{"0050":...,"0051":...}
+
+
+        //建立代號->過去交易量Map
+        Map<String, List<Long>> pastDaysTradingVolMap = new HashMap<>();
+        dateTranMap.forEach((dateStr, map) -> {
+            if (dateStr.equals(date.toString())) {
                 return;
             }
-
-            Long pastAvgTradingVol = 0L;
-            Long total = 0L;
-            Integer effectiveDays = 0;
-            for (StockDailyTran pastDaysTran : pastDaysTranList) {
-                if (pastDaysTran.getTradingVol() != 0L) {
-                    total += pastDaysTran.getTradingVol();
-                    effectiveDays++;
+            Set<Map.Entry<String, DailyTranDTO>> entries = map.entrySet();
+            for (Map.Entry<String, DailyTranDTO> entry : entries) {
+                if (pastDaysTradingVolMap.get(entry.getKey()) == null && entry.getValue().getTradingVol() > 0L) {
+                    List<Long> list = new ArrayList<>();
+                    list.add(entry.getValue().getTradingVol());
+                    pastDaysTradingVolMap.put(entry.getKey(), list);
+                } else if (pastDaysTradingVolMap.get(entry.getKey()) != null && entry.getValue().getTradingVol() > 0L) {
+                    pastDaysTradingVolMap.get(entry.getKey()).add(entry.getValue().getTradingVol());
                 }
-            }
-            if (total != 0L) {
-                pastAvgTradingVol = total / effectiveDays;
-            } else {
-                return;
-            }
-
-            Long startDateTradingVol = startDateTran.getTradingVol();
-            if (startDateTradingVol >= (pastAvgTradingVol * (1 + flucPerLL / 100)) && startDateTradingVol <= (pastAvgTradingVol * (1 + flucPerUL / 100))) {
-                codeList.add(code);
-                pastDaysAvgTradingVol.put(code, pastAvgTradingVol);
             }
         });
-        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by code";
-        List<StockIndustryDTO> dtoList;
-        try {
-            dtoList = em.createNativeQuery(qstr, "StockDTOResult")
-                    .setParameter("codeList", codeList)
-                    .getResultList();
-        } finally {
-            em.close();
-        }
+
+        //比對本日交易量與過去均量
         List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
         DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
+        startDateTranMap.forEach((code, startDateTran) -> {
+            List<Long> pastDaysTradingVolList = pastDaysTradingVolMap.get(code);
+            if (pastDaysTradingVolList == null || pastDaysTradingVolList.isEmpty()) {
+                return;
+            }
 
-        for (StockIndustryDTO dto : dtoList) {
-            SlowlyIncreaseDTO slow = new SlowlyIncreaseDTO(dto);
-            slow.setNowTradingVol(startDateMap.get(slow.getCode()).getTradingVol());
-            slow.setPastTradingVolAvg(pastDaysAvgTradingVol.get(slow.getCode()));
-            Double per = (slow.getNowTradingVol().doubleValue() - slow.getPastTradingVolAvg().doubleValue()) / slow.getPastTradingVolAvg().doubleValue();
-            String formatted = dfmt.format(per * 100);
-            slow.setFlucPercent(formatted);
-            resultList.add(slow);
-        }
+            Double pastAvgTradingVol = 0.00;
+            Long total = 0L;
+            Integer period = pastDaysTradingVolList.size();
+            for (Long pastDaysTradingVol : pastDaysTradingVolList) {
+                total += pastDaysTradingVol;
+            }
+            pastAvgTradingVol = total * 1.0 / period;
+
+            Long startDateTradingVol = startDateTran.getTradingVol();
+            if (startDateTradingVol * 1.0 >= (pastAvgTradingVol * (1 + flucPerLL / 100)) && startDateTradingVol <= (pastAvgTradingVol * (1 + flucPerUL / 100))) {
+                SlowlyIncreaseDTO slow = new SlowlyIncreaseDTO();
+                slow.setCode(startDateTran.getCode());
+                slow.setName(startDateTran.getName());
+                slow.setIndustry(startDateTran.getIndustry());
+                slow.setPastTradingVolAvg(pastAvgTradingVol.longValue());
+                slow.setNowTradingVol(startDateTradingVol);
+                Double per = (slow.getNowTradingVol() - pastAvgTradingVol) * 1.0 / pastAvgTradingVol;
+                String formatted = dfmt.format(per * 100);
+                slow.setFlucPercent(formatted);
+                resultList.add(slow);
+            }
+        });
         return resultList;
     }
 
@@ -398,32 +332,22 @@ public class SearchServiceImpl implements SearchService {
      */
     public List<FlucPercentDTO> getByDateAndFlucPer(Double ul, Double ll, Integer date) {
         List<FlucPercentDTO> resultList = new ArrayList<>();
-        List<StockDailyTran> tranList = stockDailyRepo.findByflucPerAndDate(ul, ll, date);
-        if (tranList == null || tranList.isEmpty()) {
+        Map<String, DailyTranDTO> dailyAllTrans = cacheService.getDailyAllTrans(date);
+        if (dailyAllTrans == null || dailyAllTrans.isEmpty()) {
             return resultList;
         }
-        Map<String, StockDailyTran> tranMap = tranList.stream().collect(Collectors.toMap(tran -> tran.getCode(), tran -> tran));
-        List<String> codeList = tranList.stream().map(tran -> tran.getCode()).collect(Collectors.toList());
-        List<StockIndustryDTO> dtoList;
-        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList order by a.indust_id";
-        try {
-            dtoList = em.createNativeQuery(qstr, "StockDTOResult")
-                    .setParameter("codeList", codeList)
-                    .getResultList();
-        } finally {
-            em.close();
-        }
-        for (StockIndustryDTO dto : dtoList) {
-            FlucPercentDTO result = new FlucPercentDTO();
-            result.setCode(dto.getCode());
-            result.setName(dto.getName());
-            result.setIndustry(dto.getIndustry());
-            StockDailyTran tran = tranMap.get(result.getCode());
-            result.setClosing(tran.getClosing());
-            result.setFluc(tran.getFluc());
-            result.setFlucPer(tran.getFlucPer());
-            resultList.add(result);
-        }
+        dailyAllTrans.forEach((code, tran) -> {
+            if (tran.getFlucPer() >= ll && tran.getFlucPer() <= ul) {
+                FlucPercentDTO result = new FlucPercentDTO();
+                result.setCode(tran.getCode());
+                result.setName(tran.getName());
+                result.setIndustry(tran.getIndustry());
+                result.setClosing(tran.getClosing());
+                result.setFluc(tran.getFluc());
+                result.setFlucPer(tran.getFlucPer());
+                resultList.add(result);
+            }
+        });
         return resultList;
     }
 
@@ -434,6 +358,7 @@ public class SearchServiceImpl implements SearchService {
      * @param overbought
      * @return
      */
+    @Cacheable(value = Ranking, key = "#root.args[1] + '_' + #root.args[0]", sync = true)
     public List<OverboughtRankingDTO> getOverboughtRanking(Integer date, Integer overbought) {
         String overboughtGroup;
         if (overbought == Overbought_TRUST) {
@@ -443,12 +368,13 @@ public class SearchServiceImpl implements SearchService {
         }
         List<OverboughtRankingDTO> resultList;
         String qstr =
-                "select a.code as code, a.name as name, b.name as industry, c.closing as closing, c.fluc_percent as flucPer, d." + overboughtGroup + " as overbought, TRUNCATE(((c.trading_amount / c.trading_vol)*d." + overboughtGroup + ")/1000000,2) as tradingAmount" +
-                        " from (select * from corp_daily_trans where date = :date) d" +
-                        " join stock_daily_trans c on d.code = c.code and c.date =d.date" +
-                        " join stock_basic_info a on d.code = a.code" +
-                        " join industry b on a.indust_id = b.id" +
-                        " order by tradingAmount desc limit 20";
+                "select a.code as code , a.name as name , c.industry as industry, b.closing as closing, b.fluc_percent as flucPer, a." + overboughtGroup + " as overbought, TRUNCATE(((b.trading_amount / b.trading_vol)*a." + overboughtGroup + ")/1000000,2) as tradingAmount " +
+                        "from stockinfo4jtest.corp_daily_trans  a " +
+                        "left join stockinfo4jtest.stock_daily_trans b on a.code = b.code and a.`date` = b.`date` " +
+                        "left join stockinfo4jtest.stock_basic_info c on c.code = a.code " +
+                        "where a.`date` = :date " +
+                        "order by tradingAmount DESC " +
+                        "limit 20";
         try {
             resultList = em.createNativeQuery(qstr, "OverboughtRankingDTOResult")
                     .setParameter("date", date)
@@ -456,7 +382,6 @@ public class SearchServiceImpl implements SearchService {
         } finally {
             em.close();
         }
-
         return resultList;
     }
 
@@ -472,7 +397,6 @@ public class SearchServiceImpl implements SearchService {
         dates.add(date);
         LocalDate yesterday = today.minusDays(1);
         while (true) {
-            System.out.println("迴圈1");
             if (dates.size() >= 2) {
                 break;
             }
@@ -483,27 +407,15 @@ public class SearchServiceImpl implements SearchService {
             }
             continue;
         }
-        System.out.println("dates:" + dates);
 
-        List<StockDailyTran> tranList = stockDailyRepo.findByDates(dates);
-        Map<String, StockDailyTran> todayMap = new HashMap<>();
-        Map<String, StockDailyTran> yesterdayMap = new HashMap<>();
-        for (StockDailyTran tran : tranList) {
-//            System.out.println("迴圈2");
-            if (tran.getDate().intValue() == date.intValue()) {
-                todayMap.put(tran.getCode(), tran);
-            } else {
-                yesterdayMap.put(tran.getCode(), tran);
-            }
-        }
-        System.out.println("迴圈2結束");
-        System.out.println("todaysize:" + todayMap.size());
-        System.out.println("yesterdaysize:" + yesterdayMap.size());
+        Map<String, Map<String, DailyTranDTO>> dateTranMap = cacheService.getMultiDatesTrans(dates);
+        Map<String, DailyTranDTO> todayMap = dateTranMap.get(date.toString());
+        Map<String, DailyTranDTO> yesterdayMap = dateTranMap.get(yesterday.format(fmt)) == null ? new HashMap<>() : dateTranMap.get(yesterday.format(fmt));
 
-        List<String> codeList = new ArrayList<>();
+
+        List<FiltStockDailyDTO> resultList = new ArrayList<>();
         todayMap.forEach((code, tran) -> {
-            System.out.println("迴圈3");
-            StockDailyTran yesterdayTran = yesterdayMap.get(code);
+            DailyTranDTO yesterdayTran = yesterdayMap.get(code);
             if (yesterdayTran == null) {
                 return;
             }
@@ -512,26 +424,16 @@ public class SearchServiceImpl implements SearchService {
                     tran.getClosing() < tran.getOpening() &&
                     yesterdayTran.getFlucPer() > 2.0 &&
                     tran.getFlucPer() < 0.0) {
-                codeList.add(code);
+                FiltStockDailyDTO result = new FiltStockDailyDTO();
+                result.setName(tran.getName());
+                result.setCode(tran.getCode());
+                result.setIndustry(tran.getIndustry());
+                result.getTranList().add(tran);
+                result.getTranList().add(yesterdayTran);
+                resultList.add(result);
             }
         });
 
-        List<StockIndustryDTO> dtoList;
-        String qstr = "SELECT a.code as code,a.name as name, b.name as industry FROM stock_basic_info a, industry b where a.indust_id = b.id and a.code in :codeList";
-        try {
-
-            dtoList = em.createNativeQuery(qstr, "StockDTOResult").setParameter("codeList", codeList).getResultList();
-        } finally {
-            em.close();
-        }
-
-        List<FiltStockDailyDTO> resultList = new ArrayList<>();
-        for (StockIndustryDTO dto : dtoList) {
-            FiltStockDailyDTO result = new FiltStockDailyDTO(dto);
-            result.getTranList().add(todayMap.get(dto.getCode()));
-            result.getTranList().add(yesterdayMap.get(dto.getCode()));
-            resultList.add(result);
-        }
         Collections.sort(resultList, (o1, o2) -> {
             if (o1.getTranList().get(0).getTradingVol() > o2.getTranList().get(0).getTradingVol()) {
                 return -1;
@@ -539,7 +441,6 @@ public class SearchServiceImpl implements SearchService {
                 return 1;
             }
         });
-        System.out.println("結束");
         return resultList;
     }
 }

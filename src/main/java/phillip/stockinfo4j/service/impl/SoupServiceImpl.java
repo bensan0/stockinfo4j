@@ -2,14 +2,22 @@ package phillip.stockinfo4j.service.impl;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import phillip.stockinfo4j.appconfig.BeanConfig;
 import phillip.stockinfo4j.model.dto.StockOtherInfoDTO;
+import phillip.stockinfo4j.model.pojo.Stock;
+import phillip.stockinfo4j.repository.StockRepo;
 import phillip.stockinfo4j.service.SoupService;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -17,6 +25,9 @@ public class SoupServiceImpl implements SoupService {
 
     @Autowired
     private BeanConfig.Setting setting;
+
+    @Autowired
+    private StockRepo repo;
 
     @Async
     public CompletableFuture<StockOtherInfoDTO> getOtherInfo(String code) throws IOException {
@@ -40,5 +51,49 @@ public class SoupServiceImpl implements SoupService {
         dto.setRevenueMonthFluc(document.select("body > table:nth-child(8) > tbody > tr > td:nth-child(3) > table > tbody > tr:nth-child(2) > td:nth-child(3) > div:nth-child(13) > div > table > tbody > tr:nth-child(3) > td:nth-child(3)").text());
         dto.setRevenueYearFluc(document.select("body > table:nth-child(8) > tbody > tr > td:nth-child(3) > table > tbody > tr:nth-child(2) > td:nth-child(3) > div:nth-child(13) > div > table > tbody > tr:nth-child(3) > td:nth-child(4)").text());
         return CompletableFuture.completedFuture(dto);
+    }
+
+    @PostConstruct
+    public void updateStock() throws IOException {
+        List<Stock> stockList = new ArrayList<>();
+        Document docTWSE = Jsoup.connect(setting.getStockTWSEListedUrl()).get();
+        Elements twseRows = docTWSE.select("tr");
+        for (int i = 1; i < twseRows.size(); i++) {
+            Stock stock = new Stock();
+            Element row = twseRows.get(i);
+            Elements cols = row.select("td");
+            stock.setCode(cols.get(2).text());
+            stock.setName(cols.get(3).text());
+            stock.setMarket(cols.get(4).text());
+            stock.setIndustry(cols.get(6).text());
+            stockList.add(stock);
+        }
+
+        Document docTPEX = Jsoup.connect(setting.getStockTPEXListedUrl()).get();
+        Elements tpexRows = docTPEX.select("tr");
+        for (int i = 1; i < tpexRows.size(); i++) {
+            Stock stock = new Stock();
+            Element row = tpexRows.get(i);
+            Elements cols = row.select("td");
+            stock.setCode(cols.get(2).text());
+            stock.setName(cols.get(3).text());
+            stock.setMarket(cols.get(4).text());
+            stock.setIndustry(cols.get(6).text());
+            stockList.add(stock);
+        }
+
+        Document docEmerging = Jsoup.connect(setting.getStockEmergingListedUrl()).get();
+        Elements emergingRows = docEmerging.select("tr");
+        for (int i = 1; i < emergingRows.size(); i++) {
+            Stock stock = new Stock();
+            Element row = emergingRows.get(i);
+            Elements cols = row.select("td");
+            stock.setCode(cols.get(2).text());
+            stock.setName(cols.get(3).text());
+            stock.setMarket(cols.get(4).text());
+            stock.setIndustry(cols.get(6).text());
+            stockList.add(stock);
+        }
+        repo.saveAll(stockList);
     }
 }

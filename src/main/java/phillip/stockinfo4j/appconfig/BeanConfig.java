@@ -44,5 +44,8 @@ public class BeanConfig {
         private String DistributionUrl;
         private String TempDir;
         private String StockOtherInfoUrl;
+        private String StockTPEXListedUrl;
+        private String StockTWSEListedUrl;
+        private String StockEmergingListedUrl;
     }
 }
