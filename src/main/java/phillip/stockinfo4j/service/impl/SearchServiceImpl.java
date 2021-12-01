@@ -369,9 +369,9 @@ public class SearchServiceImpl implements SearchService {
         List<OverboughtRankingDTO> resultList;
         String qstr =
                 "select a.code as code , a.name as name , c.industry as industry, b.closing as closing, b.fluc_percent as flucPer, a." + overboughtGroup + " as overbought, TRUNCATE(((b.trading_amount / b.trading_vol)*a." + overboughtGroup + ")/1000000,2) as tradingAmount " +
-                        "from stockinfo4jtest.corp_daily_trans  a " +
-                        "left join stockinfo4jtest.stock_daily_trans b on a.code = b.code and a.`date` = b.`date` " +
-                        "left join stockinfo4jtest.stock_basic_info c on c.code = a.code " +
+                        "from corp_daily_trans  a " +
+                        "left join stock_daily_trans b on a.code = b.code and a.`date` = b.`date` " +
+                        "left join stock_basic_info c on c.code = a.code " +
                         "where a.`date` = :date " +
                         "order by tradingAmount DESC " +
                         "limit 20";
