@@ -54,6 +54,9 @@ public class DownloadServiceImpl implements DownloadService {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    CacheServiceImpl cacheService;
+
     /**
      * 下載並儲存所有每日
      *
@@ -86,6 +89,7 @@ public class DownloadServiceImpl implements DownloadService {
         }
         saveStockDaily(stockDailyTrans);
         saveCorpDaily(corpDailyTrans);
+        cacheService.cacheLatestDownloadDailyAllTrans(Integer.parseInt(date));
     }
 
     /**
@@ -93,10 +97,13 @@ public class DownloadServiceImpl implements DownloadService {
      *
      * @return
      */
-    public void getTWCCDistribution() throws SaveCorpDailyFailedException{
+    @Async
+    public void getTWCCDistribution() throws SaveCorpDailyFailedException {
+        System.out.println(Thread.currentThread().getName() + " TWCCDistribution start");
         String filePath = downloadDistribution();
         List<Distribution> distributionList = filtDistribution(filePath);
         saveDistribution(distributionList);
+        System.out.println(Thread.currentThread().getName() + " TWCCDistribution finish");
     }
 
     /**
@@ -212,7 +219,7 @@ public class DownloadServiceImpl implements DownloadService {
                 tran.setName(split1[1].trim());
                 tran.setTradingVol(DownloadUtils.parseStrToDouble(split1[2].replace(",", "").trim()).longValue() / 1000);
                 tran.setDeal(DownloadUtils.parseStrToDouble(split1[3].replace(",", "").trim()).longValue());
-                tran.setTradingAmount(DownloadUtils.parseStrToLong(split1[4].replace(",","").trim()));
+                tran.setTradingAmount(DownloadUtils.parseStrToLong(split1[4].replace(",", "").trim()));
                 tran.setOpening(DownloadUtils.parseStrToDouble(split1[5].replace(",", "").trim()));
                 tran.setHighest(DownloadUtils.parseStrToDouble(split1[6].replace(",", "").trim()));
                 tran.setLowest(DownloadUtils.parseStrToDouble(split1[7].replace(",", "").trim()));
@@ -623,13 +630,18 @@ public class DownloadServiceImpl implements DownloadService {
         return tranList;
     }
 
+    /***
+     * 儲存股權分佈
+     * @param distributionList
+     * @throws SaveCorpDailyFailedException
+     */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDistribution(List<Distribution> distributionList) throws SaveCorpDailyFailedException{
+    public void saveDistribution(List<Distribution> distributionList) throws SaveCorpDailyFailedException {
         System.out.println("儲存distribution開始");
         long l1 = System.currentTimeMillis();
         distributionList = distributionRepo.saveAll(distributionList);
         long l2 = System.currentTimeMillis();
-        System.out.println("儲存corpdaily結束,共花:" + (l2 - l1) + "豪秒");
+        System.out.println("儲存distribution結束,共花:" + (l2 - l1) + "豪秒");
         if (distributionList.size() == 0 || distributionList == null) {
             throw new SaveCorpDailyFailedException();
         }

@@ -25,9 +25,9 @@ public class AttentionServiceImpl implements AttentionService {
     private EntityManager em;
 
     public List<AttentionDTO> getAllAttention() {
-        String qstr = "select a.code as code, a.note as note, a.join_date as date, b.name as name, c.name as industry " +
-                "from attention a, stock_basic_info b, industry c " +
-                "where a.code = b.code and b.indust_id = c.id order by a.id desc";
+        String qstr = "select a.code as code, a.note as note, a.join_date as date, b.name as name, b.industry as industry " +
+                "from attention a, stock_basic_info b " +
+                "where a.code = b.code order by a.id desc";
         List<AttentionDTO> resultList = em.createNativeQuery(qstr, "AttentionDTOResult").getResultList();
         return resultList;
     }

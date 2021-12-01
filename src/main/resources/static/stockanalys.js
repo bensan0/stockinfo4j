@@ -104,12 +104,12 @@ function getDistribution() {
 
 function filtTradingvol() {
     clearFilter();
-    console.log('filterlowerpercent:' + document.getElementById('filterlowerpercent').value)
+    console.log('filterdate:' + document.getElementById('filterdate').value + ';' + document.getElementById('filterdate').innerText + ';' + document.getElementById('filterdate').innerHTML)
     let req = new Request('http://127.0.0.1:8081/stockinfo4j/search/filtstockdaily',
         {
             method: 'POST',
             body: (JSON.stringify({
-                date: document.getElementById('filterdate').innerText,
+                date: document.getElementById('filterdate').value,
                 tradingVolFlucPercentLL: document.getElementById('filterlowerpercent').value,
                 tradingVolFlucPercentUL:document.getElementById('filterhigherpercent').value,
                 yesterdayTradingVolLL:document.getElementById('filterlowervol').value,
@@ -154,7 +154,7 @@ function filtTradingvol() {
                     });
                 });
             } else {
-                document.getElementById('filterstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+                document.getElementById('filterstatus').innerHTML = err + '\n' + jsonObj['errorMsg'];
             }
         })
         .catch(error => {
@@ -184,6 +184,9 @@ function getStockTrans() {
                 document.getElementById('stocktransstatus').innerHTML = 'OK';
                 let stocktranstbody = document.getElementById('stocktranstbody');
                 jsonObj['data'].forEach(function (data) {
+                    if(data===null){
+                        return
+                    }
                     stocktranstbody.innerHTML += '<tr>' +
                         '<th scope="row">' + data['code'] + '</th>' +
                         '<td>' + data['name'] + '</td>' +
@@ -195,11 +198,11 @@ function getStockTrans() {
                         '</tr>';
                 });
             } else {
-                document.getElementById('filterstatus').innerText = err + '\n' + jsonObj['errorDetail'];
+                document.getElementById('stocktransstatus').innerText = err + '\n' + jsonObj['errorDetail'];
             }
         })
         .catch(error => {
-            document.getElementById('filterstatus').innerText = error;
+            document.getElementById('stocktransstatus').innerText = error;
         });
 }
 
@@ -234,7 +237,7 @@ function getCorpTrans() {
                         '<td>' + data['dealer'] + '</td>' +
                         // '<td>' + data['dealerSelf'] + '</td>' +
                         // '<td>' + data['dealerHedge'] + '</td>' +
-                        '<td>' + data['total'] + '</td>' +
+                        '<td>' + data['corpTotal'] + '</td>' +
                         '<td>' + data['date'] + '</td>' +
                         '</tr>';
                     fiTotal += data['foreignInvestors'];
@@ -243,7 +246,7 @@ function getCorpTrans() {
                     dTotal += data['dealer'];
                     // dSTotal += data['dealerSelf'];
                     // dHTotal += data['dealerHedge'];
-                    tTotal += data['total'];
+                    tTotal += data['corpTotal'];
                 });
                 corptranstbody.innerHTML += '<tr>' +
                     '<th scope="row" colspan="2">合計</th>' +
@@ -257,7 +260,7 @@ function getCorpTrans() {
                     '<td></td>' +
                     '</tr>';
             } else {
-                document.getElementById('filterstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+                document.getElementById('corptransstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
             }
         })
         .catch(error => {
@@ -397,27 +400,24 @@ function searchDistribution() {
                 let searchdistributiontbody = document.getElementById('searchdistributiontbody');
                 searchdistributiontbody.innerHTML = '';
                 jsonObj['data'].forEach(function (data) {
-                    let rate11 = data['rate11']
-                    let rate12 = data['rate12']
-                    let rate13 = data['rate13']
-                    let rate14 = data['rate14']
                     let rate15 = data['rate15']
                     let total = data['total']
+                    let fourToTenPeople = parseInt(data['rate12'].split('/')[0]) + parseInt(data['rate13'].split('/')[0])+ parseInt(data['rate14'].split('/')[0])
+                    let fourToTenVol = parseInt(data['rate12'].split('/')[1]) + parseInt(data['rate13'].split('/')[1])+ parseInt(data['rate14'].split('/')[1])
+                    let fourToTenPer = (parseFloat(data['rate12'].split('/')[2]) + parseFloat(data['rate13'].split('/')[2])+ parseFloat(data['rate14'].split('/')[2]))
+                    let underFourPeople = parseInt(total.split('/')[0]) - parseInt(rate15.split('/')[0]) - fourToTenPeople
+                    let underFourVol = parseInt(total.split('/')[1]) - parseInt(rate15.split('/')[1]) - fourToTenVol
+                    let underFourPer = (parseFloat(total.split('/')[2]) - parseFloat(rate15.split('/')[2]) - fourToTenPer).toString()
+                    underFourPer = underFourPer.substring(0,underFourPer.indexOf('.')+3)
                     searchdistributiontbody.innerHTML += '<tr>' +
                         '<th scope="row">' + data['code'] + '</th>' +
                         '<td>' + data['name'] + '</td>' +
-                        '<td>' + rate11.split('/')[0] + '</td>' +
-                        '<td>' + rate11.split('/')[1] + '</td>' +
-                        '<td>' + rate11.split('/')[2] + '</td>' +
-                        '<td>' + rate12.split('/')[0] + '</td>' +
-                        '<td>' + rate12.split('/')[1] + '</td>' +
-                        '<td>' + rate12.split('/')[2] + '</td>' +
-                        '<td>' + rate13.split('/')[0] + '</td>' +
-                        '<td>' + rate13.split('/')[1] + '</td>' +
-                        '<td>' + rate13.split('/')[2] + '</td>' +
-                        '<td>' + rate14.split('/')[0] + '</td>' +
-                        '<td>' + rate14.split('/')[1] + '</td>' +
-                        '<td>' + rate14.split('/')[2] + '</td>' +
+                        '<td>' + underFourPeople + '</td>' +
+                        '<td>' + underFourVol + '</td>' +
+                        '<td>' + underFourPer + '</td>' +
+                        '<td>' + fourToTenPeople + '</td>' +
+                        '<td>' + fourToTenVol + '</td>' +
+                        '<td>' + fourToTenPer + '</td>' +
                         '<td>' + rate15.split('/')[0] + '</td>' +
                         '<td>' + rate15.split('/')[1] + '</td>' +
                         '<td>' + rate15.split('/')[2] + '</td>' +
@@ -672,4 +672,56 @@ function getOverboughtRanking(radioVal){
 function clearOverboughtRanking(){
     document.getElementById('overboughtrankingstatus').innerText = '';
     document.getElementById('overboughtrankingtbody').innerHTML = '';
+}
+
+function getBigBlackK() {
+    clearBigBlackK()
+
+    fetch('http://127.0.0.1:8081/stockinfo4j/search/bigblackk?date=' + document.getElementById('bigblackkdate').value)
+        .then(res => {
+            if (res.status === 200) {
+                return res.json()
+            } else {
+                throw new Error(res.statusText)
+            }
+        })
+        .then(jsonObj => {
+            console.log(jsonObj);
+            let err = jsonObj['errorMsg']
+            if (err['code']==="0000") {
+                document.getElementById('bigblackkstatus').innerHTML = 'OK';
+                let bigBlackKtbody = document.getElementById('bigblackktbody');
+                let bigBlackKTranstbody = document.getElementById('bigblackktranstbody');
+                jsonObj['data'].forEach(function (data) {
+                    bigBlackKtbody.innerHTML += '<tr>' +
+                        '<th scope="row">' + data['code'] + '</th>' +
+                        '<td>' + data['name'] + '</td>' +
+                        '<td>' + data['industry'] + '</td>' +
+                        '</tr>';
+
+                    data['tranList'].forEach(function (datatrans) {
+                        bigBlackKTranstbody.innerHTML += '<tr>' +
+                            '<th scope="row">' + datatrans['code'] + '</th>' +
+                            '<td>' + datatrans['name'] + '</td>' +
+                            '<td>' + datatrans['tradingVol'] + '</td>' +
+                            '<td>' + datatrans['opening'] + '</td>' +
+                            '<td>' + datatrans['closing'] + '</td>' +
+                            '<td>' + datatrans['flucPer'] + '</td>' +
+                            '<td>' + datatrans['date'] + '</td>' +
+                            '</tr>';
+                    });
+                });
+            } else {
+                document.getElementById('bigblackkstatus').innerHTML = err + '\n' + jsonObj['errorDetail'];
+            }
+        })
+        .catch(error => {
+            document.getElementById('bigblackkstatus').innerHTML = error;
+        });
+}
+
+function clearBigBlackK(){
+    document.getElementById('bigblackktbody').innerHTML=''
+    document.getElementById('bigblackktranstbody').innerHTML=''
+    document.getElementById('bigblackkstatus').innerHTML=''
 }

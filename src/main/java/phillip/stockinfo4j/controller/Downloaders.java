@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.model.dto.BasicRes;
@@ -17,7 +16,7 @@ import java.time.LocalDate;
 @RequestMapping("downloaders")
 public class Downloaders {
 
-    private WebClient webClient = WebClient.builder().build();
+//    private WebClient webClient = WebClient.builder().build();
 
     @Autowired
     DownloadService downloadService;
@@ -30,7 +29,7 @@ public class Downloaders {
     @GetMapping("/daily")
     public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws Exception {
         BasicRes resp = new BasicRes();
-        if(yyyyMMdd==null||yyyyMMdd.length()==0){
+        if (yyyyMMdd == null || yyyyMMdd.length() == 0) {
             yyyyMMdd = LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd"));
         }
         DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
@@ -48,12 +47,4 @@ public class Downloaders {
         downloadService.getTWCCDistribution();
         return resp;
     }
-
-
-    @GetMapping("/testAdvice")
-    public BasicRes getEx() {
-        BasicRes resp = new BasicRes();
-        return resp;
-    }
-
 }

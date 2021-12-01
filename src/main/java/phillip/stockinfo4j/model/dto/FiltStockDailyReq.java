@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.swing.text.DateFormatter;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,14 +28,15 @@ public class FiltStockDailyReq implements Serializable {
 
     public void setDate(String date) {
         if (date == null || date.trim().length() != 8) {
+            this.date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         } else {
             try {
                 Integer.parseInt(date);
                 this.date = date;
             } catch (NumberFormatException e) {
+                this.date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             }
         }
-
     }
 
     public void setTradingVolFlucPercentLL(Double tradingVolFlucPercentLL) {

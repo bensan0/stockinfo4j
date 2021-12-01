@@ -18,9 +18,9 @@ public class SlowlyIncreaseDTO {
     private Long pastTradingVolAvg;
     private Long nowTradingVol;
 
-    public SlowlyIncreaseDTO(StockIndustryDTO dto) {
-        this.code = dto.getCode();
-        this.name = dto.getName();
-        this.industry = dto.getIndustry();
-    }
+//    public SlowlyIncreaseDTO(StockIndustryDTO dto) {
+//        this.code = dto.getCode();
+//        this.name = dto.getName();
+//        this.industry = dto.getIndustry();
+//    }
 }
