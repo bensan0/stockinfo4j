@@ -131,7 +131,6 @@ public class CacheServiceImpl {
                 "where a.code = :code and a.`date` >= :yearAgo " +
                 "order by date desc";
         List<DistributionDTO> resultList;
-        System.out.println(yearAgo.format(DownloadUtils.getDateTimeFormatter("yyyyMMdd")));
         try {
             resultList = em.createNativeQuery(qstr, "DistributionDTOResult")
                     .setParameter("code", code)

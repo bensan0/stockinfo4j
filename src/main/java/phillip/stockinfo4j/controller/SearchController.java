@@ -25,7 +25,6 @@ public class SearchController {
      */
     @PostMapping("filtstockdaily")
     public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) {
-        System.out.println("req: " + req);
         BasicRes resp = new BasicRes();
         if (DownloadUtils.isDateSaturdayOrSunday(req.getDate()) || !DownloadUtils.isDateConform(req.getDate())) {
             throw new InvalidParamException();

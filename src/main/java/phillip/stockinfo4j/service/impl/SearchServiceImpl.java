@@ -65,12 +65,8 @@ public class SearchServiceImpl implements SearchService {
         dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
         dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
         Map<String, Map<String, DailyTranDTO>> multiDatesTrans = cacheService.getMultiDatesTrans(dates);
-        System.out.println("dates: " + dates);
-        ;
         Map<String, DailyTranDTO> todayMap = multiDatesTrans.get(today.format(fmt));
-        System.out.println("today: " + todayMap);
         Map<String, DailyTranDTO> yesterdayMap = multiDatesTrans.get(yesterday.format(fmt));
-        System.out.println("today: " + yesterdayMap);
 
         //篩選出符合條件股的code
         List<FiltStockDailyDTO> resultList = new ArrayList<>();
@@ -80,7 +76,7 @@ public class SearchServiceImpl implements SearchService {
                 return;
             }
             boolean isTVLLConfirm = todayDTO.getTradingVol().doubleValue() >= yesterdayDTO.getTradingVol().doubleValue() * (1.00 + req.getTradingVolFlucPercentLL());
-            boolean isTVULConfirm = todayDTO.getTradingVol().doubleValue() <= yesterdayDTO.getTradingVol().doubleValue() * req.getTradingVolFlucPercentUL();
+            boolean isTVULConfirm = todayDTO.getTradingVol().doubleValue() <= yesterdayDTO.getTradingVol().doubleValue() * (1.00 + req.getTradingVolFlucPercentUL());
             boolean isYTVLLConfirm = yesterdayDTO.getTradingVol() >= req.getYesterdayTradingVolLL();
             boolean isYTVULConfirm = yesterdayDTO.getTradingVol() <= req.getYesterdayTradingVolUL();
             boolean isTCULConfirm = todayDTO.getClosing() <= req.getTodayClosingUL();
