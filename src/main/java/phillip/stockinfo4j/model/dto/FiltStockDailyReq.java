@@ -26,19 +26,6 @@ public class FiltStockDailyReq implements Serializable {
 
     private Double todayClosingUL = 40.00;//今日收盤價上限
 
-    public void setDate(String date) {
-        if (date == null || date.trim().length() != 8) {
-            this.date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        } else {
-            try {
-                Integer.parseInt(date);
-                this.date = date;
-            } catch (NumberFormatException e) {
-                this.date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            }
-        }
-    }
-
     public void setTradingVolFlucPercentLL(Double tradingVolFlucPercentLL) {
         try{
             this.tradingVolFlucPercentLL = tradingVolFlucPercentLL/100;

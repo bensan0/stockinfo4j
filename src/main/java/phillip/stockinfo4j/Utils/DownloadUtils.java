@@ -10,6 +10,8 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -70,26 +72,19 @@ public class DownloadUtils {
     }
 
     /**
-     * 檢查時間是否符合格式yyyyMMdd
+     * 檢查時間是否為8位數字
      *
      * @param yyyyMMdd
      * @return
      * @throws DateParseException
      */
-    public static boolean isDateConform(String yyyyMMdd) throws DateParseException {
+    public static boolean isDateConform(String yyyyMMdd){
         if (yyyyMMdd.trim().length() != 8) {
             return false;
         }
-        Integer month;
-        Integer day;
         try{
-            month = Integer.parseInt(yyyyMMdd.substring(4, 6));
-            day = Integer.parseInt(yyyyMMdd.substring(6, 8));
+            Integer.parseInt(yyyyMMdd);
         }catch (NumberFormatException e){
-            throw new DateParseException(ErrorEnum.DateFormatNotAllowed, e.getMessage());
-        }
-
-        if (month > 12 || day > 31) {
             return false;
         }
         return true;
@@ -169,14 +164,38 @@ public class DownloadUtils {
 
     /***
      *
-     * @param yyyyMMdd
+     * @param date
+     * @param pattern
      * @return
      */
-    public static boolean isDateAfterToday(String yyyyMMdd){
-        LocalDate inputDate = LocalDate.parse(yyyyMMdd, getDateTimeFormatter("yyyyMMdd"));
+    public static boolean isDateAfterToday(String date, String pattern){
+        LocalDate inputDate = LocalDate.parse(date, getDateTimeFormatter(pattern));
         if(inputDate.isAfter(LocalDate.now())){
             return true;
         }
         return false;
+    }
+
+    /***
+     * 驗證日期是否有效
+     * @param date
+     * @param pattern
+     * @return
+     */
+    public static boolean isValidDate(String date, String pattern) {
+        boolean convertSuccess = true;
+        // 指定日期格式為四位年/兩位月份/兩位日期，注意yyyy/MM/dd區分大小寫；
+        SimpleDateFormat format = new SimpleDateFormat(pattern);
+        try {
+            // 設定lenient為false.
+            // 否則SimpleDateFormat會比較寬鬆地驗證日期，比如2007/02/29會被接受，並轉換成2007/03/01
+            format.setLenient(false);
+            format.parse(date);
+        } catch (ParseException e) {
+            // e.printStackTrace();
+            // 如果throw java.text.ParseException或者NullPointerException，就說明格式不對
+            convertSuccess = false;
+        }
+        return convertSuccess;
     }
 }

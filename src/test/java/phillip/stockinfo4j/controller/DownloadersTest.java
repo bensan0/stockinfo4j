@@ -5,11 +5,12 @@ import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -19,20 +20,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import phillip.stockinfo4j.model.dto.BasicRes;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(SpringExtension.class)
 @Transactional
+@AutoConfigureMockMvc
 class DownloadersTest {
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
     private MockMvc mockMvc;
 
 
     @BeforeEach
     void setUp() {
         System.out.println("測試開始");
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @AfterEach
@@ -56,10 +56,5 @@ class DownloadersTest {
     @Test
     void getDistribution() {
         System.out.println("執行getDistribution");
-    }
-
-    @Test
-    void getEx() {
-        System.out.println("執行getEx");
     }
 }

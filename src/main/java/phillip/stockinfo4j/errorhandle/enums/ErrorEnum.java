@@ -1,7 +1,11 @@
 package phillip.stockinfo4j.errorhandle.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import phillip.stockinfo4j.errorhandle.IBaseErrorInfo;
+
+import java.util.Arrays;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ErrorEnum implements IBaseErrorInfo {
@@ -14,7 +18,7 @@ public enum ErrorEnum implements IBaseErrorInfo {
     ThreadInterrupted("0006", "執行緒中斷"),
     FailedSave("0007", "持久化異常"),
     FailedToDeleteFile("0008", "刪除檔案錯誤"),
-    InValidParam("0009","參數異常"),
+    InValidParam("0009", "參數異常"),
     ;
 
     private final String code;
@@ -34,5 +38,10 @@ public enum ErrorEnum implements IBaseErrorInfo {
     @Override
     public String getDescription() {
         return this.description;
+    }
+
+    @JsonCreator // This is the factory method and must be static
+    public static ErrorEnum deserialize(@JsonProperty("code") String code, @JsonProperty("description") String description) {
+        return Arrays.stream(ErrorEnum.values()).filter(ee -> ee.code.equals(code) && ee.description.equals(description)).findFirst().get();
     }
 }
