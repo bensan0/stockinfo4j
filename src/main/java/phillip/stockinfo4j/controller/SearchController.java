@@ -25,13 +25,13 @@ public class SearchController {
      */
     @PostMapping("filtstockdaily")
     public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) {
-        System.out.println("req: " + req);
         BasicRes resp = new BasicRes();
-        if (DownloadUtils.isDateSaturdayOrSunday(req.getDate()) || !DownloadUtils.isDateConform(req.getDate())) {
+        String reqDate = req.getDate();
+        if (!DownloadUtils.isDateConform(reqDate) || !DownloadUtils.isValidDate(reqDate, "yyyyMMdd") || DownloadUtils.isDateSaturdayOrSunday(reqDate)) {
             throw new InvalidParamException();
         }
 
-        if (DownloadUtils.isDateAfterToday(req.getDate())) {
+        if (DownloadUtils.isDateAfterToday(req.getDate(), "yyyyMMdd")) {
             req.setDate(LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd")));
         }
         resp.setData(searchService.filtStockDaily(req));
@@ -47,7 +47,7 @@ public class SearchController {
     @GetMapping("stocktran")
     public BasicRes getDaysStock(@RequestParam(defaultValue = "5") Integer days,
                                  @RequestParam String code) {
-        if (days > 366) {
+        if (days > 31) {
             throw new InvalidParamException();
         }
         BasicRes resp = new BasicRes();
@@ -65,7 +65,7 @@ public class SearchController {
     @GetMapping("corptran")
     public BasicRes getDaysCorp(@RequestParam(defaultValue = "5") Integer days,
                                 @RequestParam String code) {
-        if (days > 366) {
+        if (days > 31) {
             throw new InvalidParamException();
         }
         BasicRes resp = new BasicRes();
@@ -102,11 +102,13 @@ public class SearchController {
      */
     @GetMapping("slowlyincrease")
     public BasicRes getSlowlyIncrease(@RequestParam Integer date,
-                                      @RequestParam Double flucPercentLL,
-                                      @RequestParam Double flucPercentUL,
+                                      @RequestParam(defaultValue = "50") Double flucPercentLL,
+                                      @RequestParam(defaultValue = "100") Double flucPercentUL,
                                       @RequestParam Integer days) {
-        if (days > 366 || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
-                !DownloadUtils.isDateConform(date.toString())) {
+        if (days > 31 ||
+                !DownloadUtils.isDateConform(date.toString()) ||
+                !DownloadUtils.isValidDate(date.toString(), "yyyyMMdd") ||
+                DownloadUtils.isDateSaturdayOrSunday(date.toString())) {
             throw new InvalidParamException();
         }
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
@@ -185,7 +187,7 @@ public class SearchController {
      */
     @GetMapping("bigblackk")
     public BasicRes getBigBlackK(@RequestParam Integer date) {
-        if (DownloadUtils.isDateAfterToday(date.toString()) || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
+        if (DownloadUtils.isDateAfterToday(date.toString(), "yyyyMMdd") || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
                 !DownloadUtils.isDateConform(date.toString())) {
             throw new InvalidParamException();
         }

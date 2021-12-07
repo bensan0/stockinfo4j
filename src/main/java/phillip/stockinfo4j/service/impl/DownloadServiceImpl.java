@@ -367,10 +367,10 @@ public class DownloadServiceImpl implements DownloadService {
     private List<StockDailyTran> filtTPEXStockDaily(String filePath) {
         List<StockDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
-        if (content.length() == 0) {
+        String[] split = content.split("次日跌停價");
+        if (split.length < 2) {
             return tranList;
         }
-        String[] split = content.split("次日跌停價");
         split = split[1].split("管理股票");
 
         Scanner sc = new Scanner(split[0]);
@@ -456,10 +456,10 @@ public class DownloadServiceImpl implements DownloadService {
     private List<CorpDailyTran> filtTPEXCorpDaily(String filePath) {
         List<CorpDailyTran> tranList = new LinkedList<>();
         String content = DownloadUtils.readFileToString(filePath, "big5");
-        if (content.length() == 0) {
+        String[] split = content.split("三大法人買賣超股數合計");
+        if (split[1].length() < 3) {
             return tranList;
         }
-        String[] split = content.split("三大法人買賣超股數合計");
         Scanner sc = new Scanner(split[1]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");

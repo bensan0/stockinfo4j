@@ -26,8 +26,8 @@ public class SoupServiceImpl implements SoupService {
     @Autowired
     private BeanConfig.Setting setting;
 
-    @Autowired
-    private StockRepo repo;
+//    @Autowired
+//    private StockRepo repo;
 
     @Async
     public CompletableFuture<StockOtherInfoDTO> getOtherInfo(String code) throws IOException {
@@ -53,47 +53,47 @@ public class SoupServiceImpl implements SoupService {
         return CompletableFuture.completedFuture(dto);
     }
 
-    @PostConstruct
-    public void updateStock() throws IOException {
-        List<Stock> stockList = new ArrayList<>();
-        Document docTWSE = Jsoup.connect(setting.getStockTWSEListedUrl()).get();
-        Elements twseRows = docTWSE.select("tr");
-        for (int i = 1; i < twseRows.size(); i++) {
-            Stock stock = new Stock();
-            Element row = twseRows.get(i);
-            Elements cols = row.select("td");
-            stock.setCode(cols.get(2).text());
-            stock.setName(cols.get(3).text());
-            stock.setMarket(cols.get(4).text());
-            stock.setIndustry(cols.get(6).text());
-            stockList.add(stock);
-        }
-
-        Document docTPEX = Jsoup.connect(setting.getStockTPEXListedUrl()).get();
-        Elements tpexRows = docTPEX.select("tr");
-        for (int i = 1; i < tpexRows.size(); i++) {
-            Stock stock = new Stock();
-            Element row = tpexRows.get(i);
-            Elements cols = row.select("td");
-            stock.setCode(cols.get(2).text());
-            stock.setName(cols.get(3).text());
-            stock.setMarket(cols.get(4).text());
-            stock.setIndustry(cols.get(6).text());
-            stockList.add(stock);
-        }
-
-        Document docEmerging = Jsoup.connect(setting.getStockEmergingListedUrl()).get();
-        Elements emergingRows = docEmerging.select("tr");
-        for (int i = 1; i < emergingRows.size(); i++) {
-            Stock stock = new Stock();
-            Element row = emergingRows.get(i);
-            Elements cols = row.select("td");
-            stock.setCode(cols.get(2).text());
-            stock.setName(cols.get(3).text());
-            stock.setMarket(cols.get(4).text());
-            stock.setIndustry(cols.get(6).text());
-            stockList.add(stock);
-        }
-        repo.saveAll(stockList);
-    }
+//    @PostConstruct/*若依賴的實體內有@Async 則該@Async失效*/
+//    public void updateStock() throws IOException {
+//        List<Stock> stockList = new ArrayList<>();
+//        Document docTWSE = Jsoup.connect(setting.getStockTWSEListedUrl()).get();
+//        Elements twseRows = docTWSE.select("tr");
+//        for (int i = 1; i < twseRows.size(); i++) {
+//            Stock stock = new Stock();
+//            Element row = twseRows.get(i);
+//            Elements cols = row.select("td");
+//            stock.setCode(cols.get(2).text());
+//            stock.setName(cols.get(3).text());
+//            stock.setMarket(cols.get(4).text());
+//            stock.setIndustry(cols.get(6).text());
+//            stockList.add(stock);
+//        }
+//
+//        Document docTPEX = Jsoup.connect(setting.getStockTPEXListedUrl()).get();
+//        Elements tpexRows = docTPEX.select("tr");
+//        for (int i = 1; i < tpexRows.size(); i++) {
+//            Stock stock = new Stock();
+//            Element row = tpexRows.get(i);
+//            Elements cols = row.select("td");
+//            stock.setCode(cols.get(2).text());
+//            stock.setName(cols.get(3).text());
+//            stock.setMarket(cols.get(4).text());
+//            stock.setIndustry(cols.get(6).text());
+//            stockList.add(stock);
+//        }
+//
+//        Document docEmerging = Jsoup.connect(setting.getStockEmergingListedUrl()).get();
+//        Elements emergingRows = docEmerging.select("tr");
+//        for (int i = 1; i < emergingRows.size(); i++) {
+//            Stock stock = new Stock();
+//            Element row = emergingRows.get(i);
+//            Elements cols = row.select("td");
+//            stock.setCode(cols.get(2).text());
+//            stock.setName(cols.get(3).text());
+//            stock.setMarket(cols.get(4).text());
+//            stock.setIndustry(cols.get(6).text());
+//            stockList.add(stock);
+//        }
+//        repo.saveAll(stockList);
+//    }
 }
