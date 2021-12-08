@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.errorhandle.exceptions.InvalidParamException;
 import phillip.stockinfo4j.model.dto.*;
-import phillip.stockinfo4j.service.impl.SearchServiceImpl;
+import phillip.stockinfo4j.service.SearchService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 public class SearchController {
 
     @Autowired
-    SearchServiceImpl searchService;
+    SearchService searchService;
 
 
     /***
