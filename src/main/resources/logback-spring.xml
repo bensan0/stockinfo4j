@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" debug="false" scanPeriod="60 seconds">
+    <!--日誌檔名稱：這裡spring.application.name表示工程名稱-->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name"/>
+
+    <!--預設配置-->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!--配置控制檯(Console)-->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+
+    <!--        <springProfile name="test">&lt;!&ndash;哪个环境的标识，可以配置多个模块&ndash;&gt;-->
+    <!--日志放的总目录-->
+    <property name="LOG_FILE_HOME" value="log"/>
+    <!--格式化輸出：%d表示日期，%thread表示執行緒名，%-5level：級別從左顯示5個字元寬度%msg：日誌訊息，%n是換行符-->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+
+    <!-- ConsoleAppender 类表示控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- 日志格式引用 -->
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <!--        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+        <!--            <level>DEBUG</level>-->
+        <!--        </filter>-->
+    </appender>
+    <!--    </springProfile>-->
+
+    <!--配置日誌檔案(File)-->
+    <!--
+        当发生滚动时，决定 RollingFileAppender 的行为，涉及文件移动和重命名
+        TimeBasedRollingPolicy： 最常用的滚动策略，它根据时间来制定滚动策略，既负责滚动也负责出发滚动。
+        -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--設定策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日誌檔案路徑：這裡%d{yyyyMMdd}表示按天分類日誌-->
+            <!--
+        日志输出格式：
+			%d表示日期时间，
+			%thread表示线程名，
+			%-5level：级别从左显示5个字符宽度
+			%logger{50} 表示logger名字最长50个字符，否则按照句点分割。
+			%msg：日志消息，
+			%n是换行符
+        -->
+            <fileNamePattern>${LOG_FILE_HOME}/${APP_NAME}-%d{yyyyMMdd}.%i.log</fileNamePattern>
+            <!--
+            滚动时产生的文件的存放位置及文件名称 %d{yyyy-MM-dd}：按天进行日志滚动
+            %i：当文件大小超过maxFileSize时，按照i进行文件滚动
+      <FileNamePattern>${LOG_HOME}/${appName}-%d{yyyy-MM-dd}-%i.log</FileNamePattern> -->
+            <!--日誌保留天數-->
+            <maxHistory>15</maxHistory>
+            <maxFileSize>1MB</maxFileSize>
+        </rollingPolicy>
+        <!--設定格式-->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化輸出：%d表示日期，%thread表示執行緒名，%-5level：級別從左顯示5個字元寬度%msg：日誌訊息，%n是換行符-->
+            <pattern>${LOG_PATTERN}</pattern>
+            <!-- 或者使用預設配置 -->
+            <charset>utf8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+    <!-- 多環境配置 按照active profile選擇分支 -->
+    <!--    <springProfile name="dev">-->
+    <!--        &lt;!&ndash;root節點 全域性日誌級別，用來指定最基礎的日誌輸出級別&ndash;&gt;-->
+    <!--        <root level="INFO">-->
+    <!--            <appender-ref ref="FILE"/>-->
+    <!--            <appender-ref ref="CONSOLE"/>-->
+    <!--        </root>-->
+
+    <!--        &lt;!&ndash; 子節點向上級傳遞 區域性日誌級別&ndash;&gt;-->
+    <!--        <logger level="WARN" name="org.springframework"/>-->
+    <!--        <logger level="WARN" name="com.netflix"/>-->
+    <!--        <logger level="DEBUG" name="org.hibernate.SQL"/>-->
+    <!--    </springProfile>-->
+    <springProfile name="prod">
+
+    </springProfile>
+</configuration>

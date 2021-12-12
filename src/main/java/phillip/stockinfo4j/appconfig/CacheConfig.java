@@ -13,8 +13,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.time.Duration;
-
 @Configuration
 @EnableCaching
 public class CacheConfig extends CachingConfigurerSupport {
@@ -43,11 +41,11 @@ public class CacheConfig extends CachingConfigurerSupport {
                         .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(template.getStringSerializer()))
                         // 设置value 为自动转Json的Object
                         .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(template.getValueSerializer()))
-                        // 不缓存null
+                // 不缓存null
 //                        .disableCachingNullValues()
-                        // 缓存数据保存1小时
-                        .entryTtl(Duration.ofHours(1));
-
+                // 缓存数据保存1小时
+//                        .entryTtl(Duration.ofHours(1));
+                ;
         // 够着一个redis缓存管理器
         RedisCacheManager redisCacheManager =
                 RedisCacheManager.RedisCacheManagerBuilder

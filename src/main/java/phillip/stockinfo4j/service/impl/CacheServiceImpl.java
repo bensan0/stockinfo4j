@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.model.dto.DailyTranDTO;
 import phillip.stockinfo4j.model.dto.DistributionDTO;
+import phillip.stockinfo4j.service.CacheService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class CacheServiceImpl {
+public class CacheServiceImpl implements CacheService {
 
     @PersistenceContext
     EntityManager em;
