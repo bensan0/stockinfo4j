@@ -9,6 +9,7 @@ import phillip.stockinfo4j.model.dto.*;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
 import phillip.stockinfo4j.repository.DistributionRepo;
 import phillip.stockinfo4j.repository.StockDailyRepo;
+import phillip.stockinfo4j.service.CacheService;
 import phillip.stockinfo4j.service.SearchService;
 
 import javax.persistence.EntityManager;
@@ -39,7 +40,7 @@ public class SearchServiceImpl implements SearchService {
     EntityManager em;
 
     @Autowired
-    CacheServiceImpl cacheService;
+    CacheService cacheService;
 
     /***
      * 篩選特定條件

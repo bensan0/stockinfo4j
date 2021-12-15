@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import phillip.stockinfo4j.service.CacheService;
+import phillip.stockinfo4j.service.impl.CacheServiceImpl;
 
 import java.time.Duration;
 
@@ -35,30 +37,38 @@ public class CacheConfig extends CachingConfigurerSupport {
     @Bean
     public CacheManager cacheManager(RedisTemplate<String, Object> template) {
 
-        // 基本配置
-        RedisCacheConfiguration defaultCacheConfiguration =
-                RedisCacheConfiguration
-                        .defaultCacheConfig()
-                        // 设置key为String
-                        .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(template.getStringSerializer()))
-                        // 设置value 为自动转Json的Object
-                        .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(template.getValueSerializer()))
-                        // 不缓存null
-//                        .disableCachingNullValues()
-                        // 缓存数据保存1小时
-                        .entryTtl(Duration.ofHours(1));
 
-        // 够着一个redis缓存管理器
+        // 構造Redis快取管理器
         RedisCacheManager redisCacheManager =
                 RedisCacheManager.RedisCacheManagerBuilder
                         // Redis 连接工厂
                         .fromConnectionFactory(template.getConnectionFactory())
-                        // 缓存配置
-                        .cacheDefaults(defaultCacheConfiguration)
+                        // 配置快取基礎設置,過期時間1小時
+                        .cacheDefaults(getDefaultCacheConfig(template,Duration.ofHours(1L)))
+                        //分別配置快取過期時間
+                        .withCacheConfiguration(CacheServiceImpl.DailyTranCache, getDefaultCacheConfig(template, Duration.ZERO))
+                        .withCacheConfiguration(CacheServiceImpl.DistributionCache, getDefaultCacheConfig(template, Duration.ZERO))
                         // 配置同步修改或删除 put/evict
                         .transactionAware()
                         .build();
 
         return redisCacheManager;
+    }
+
+    private RedisCacheConfiguration getDefaultCacheConfig(RedisTemplate<String, Object> template, Duration ttl) {
+        // 基本配置
+        RedisCacheConfiguration defaultCacheConfiguration =
+                RedisCacheConfiguration
+                        .defaultCacheConfig()
+                        // 設置key序列化/反序列化
+                        .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(template.getStringSerializer()))
+                        // 設置value序列化/反序列化
+                        .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(template.getValueSerializer()))
+                        // 不快取null
+//                        .disableCachingNullValues()
+                        // 快取保存時數
+                        .entryTtl(ttl);
+        ;
+        return defaultCacheConfiguration;
     }
 }
