@@ -61,10 +61,13 @@
             <!-- 或者使用預設配置 -->
             <charset>utf8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+<!--        <filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--            <level>DEBUG</level>-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </filter>-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>DEBUG</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
     <root level="INFO">

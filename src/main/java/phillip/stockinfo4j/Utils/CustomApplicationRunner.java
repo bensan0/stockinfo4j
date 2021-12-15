@@ -9,6 +9,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import phillip.stockinfo4j.aop.anno.Log;
 import phillip.stockinfo4j.appconfig.BeanConfig;
 import phillip.stockinfo4j.model.pojo.Stock;
 import phillip.stockinfo4j.repository.StockRepo;
@@ -44,6 +45,7 @@ public class CustomApplicationRunner {
     private class Runner1 implements ApplicationRunner {
 
         @Override
+        @Log
         public void run(ApplicationArguments args) throws Exception {
             System.out.println("啟動更新");
             List<Stock> stockList = new ArrayList<>();
@@ -94,6 +96,7 @@ public class CustomApplicationRunner {
     private class Runner2 implements ApplicationRunner {
 
         @Override
+        @Log
         public void run(ApplicationArguments args) throws Exception {
             System.out.println("快取交易紀錄");
             LocalDate today = LocalDate.now();
@@ -111,7 +114,7 @@ public class CustomApplicationRunner {
 
             LocalDate before = today.minusDays(1);
             while (true) {
-                if (dates.size() >= 20) {
+                if (dates.size() >= 10) {
                     break;
                 }
 

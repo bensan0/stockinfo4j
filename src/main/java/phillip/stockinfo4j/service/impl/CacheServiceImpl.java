@@ -31,8 +31,8 @@ public class CacheServiceImpl implements CacheService {
     @Autowired
     ApplicationContext applicationContext;
 
-    private static final String DailyTranCache = "DailyTran";
-    private static final String DistributionCache = "Distribution";
+    public static final String DailyTranCache = "DailyTran";
+    public static final String DistributionCache = "Distribution";
     private static final String Ranking = "Ranking";
     private static final Integer Overbought_TRUST = 0;
     private static final Integer Overbought_FI = 1;
