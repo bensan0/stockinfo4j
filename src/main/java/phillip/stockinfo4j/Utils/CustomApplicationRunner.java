@@ -44,6 +44,9 @@ public class CustomApplicationRunner {
     @Order(1)
     private class Runner1 implements ApplicationRunner {
 
+        public Runner1() {
+        }
+
         @Override
         @Log
         public void run(ApplicationArguments args) throws Exception {
@@ -94,6 +97,9 @@ public class CustomApplicationRunner {
     @Component
     @Order(2)
     private class Runner2 implements ApplicationRunner {
+
+        public Runner2() {
+        }
 
         @Override
         @Log
