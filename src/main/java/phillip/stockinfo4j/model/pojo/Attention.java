@@ -34,7 +34,8 @@ public class Attention implements Serializable {
     @Column(name = "code", nullable = false, length = 4)
     private String code;
 
-    @Column(name = "note")
+    @Lob
+    @Column(name = "note",columnDefinition = "text")
     private String note;
 
     @Column(name = "join_date")

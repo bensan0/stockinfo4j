@@ -310,11 +310,11 @@ function getAttention() {
                 jsonObj['data'].forEach(function (data) {
                     attentionstbody.innerHTML += '<tr>' +
                         '<th scope="row">' + data['code'] + '</th>' +
-                        '<td>' + data['name'] + '</td>' +
-                        '<td>' + data['industry'] + '</td>' +
-                        '<td>' + data['note'] + '</td>' +
-                        '<td>' + data['date'] + '</td>' +
-                        '<td>' + '<button onclick="deleteAttention(\'' + data['code'] + '\')">刪除</button>' + '</td>' +
+                        '<td align="center">' + data['name'] + '</td>' +
+                        '<td align="center">' + data['industry'] + '</td>' +
+                        '<td align="center"><textarea rows="5" cols="25">' + data['note'] +  '</textarea></td>' +
+                        '<td align="center">' + data['date'] + '</td>' +
+                        '<td align="center">' + '<button onclick="deleteAttention(\'' + data['code'] + '\')">刪除</button>' + '</td>' +
                         '</tr>';
                 });
             } else {

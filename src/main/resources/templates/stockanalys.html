@@ -538,7 +538,7 @@
             <h4>觀察清單</h4>
             <input id="attentionscode" type="text" required="required" pattern="[A-Za-z0-9]{1,20}"
                    placeholder="個股代號">
-            <input id="attentionscomment" type="text" required="required" placeholder="備註">
+            <textarea id="attentionscomment" required="required" placeholder="備註" cols="25" rows="1"></textarea>
             <button onclick="addAttention()">新增</button>
             <br>
             <text id="attentionsstatus"></text>
@@ -552,7 +552,7 @@
                     <th scope="col">業種</th>
                     <th scope="col">備註</th>
                     <th scope="col">加入日期</th>
-                    <!--                    <th scope="col"></th>-->
+                    <th scope="col"></th>
                 </tr>
                 </thead>
                 <tbody id="attentionstbody">
