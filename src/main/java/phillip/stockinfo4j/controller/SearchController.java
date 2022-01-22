@@ -3,6 +3,8 @@ package phillip.stockinfo4j.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.exceptions.DateParseException;
 import phillip.stockinfo4j.errorhandle.exceptions.InvalidParamException;
 import phillip.stockinfo4j.model.dto.*;
 import phillip.stockinfo4j.service.SearchService;
@@ -24,11 +26,11 @@ public class SearchController {
      * @return
      */
     @PostMapping("filtstockdaily")
-    public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) {
+    public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) throws InvalidParamException, DateParseException {
         BasicRes resp = new BasicRes();
         String reqDate = req.getDate();
         if (!DownloadUtils.isDateConform(reqDate) || !DownloadUtils.isValidDate(reqDate, "yyyyMMdd") || DownloadUtils.isDateSaturdayOrSunday(reqDate)) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
 
         if (DownloadUtils.isDateAfterToday(req.getDate(), "yyyyMMdd")) {
@@ -46,9 +48,9 @@ public class SearchController {
      */
     @GetMapping("stocktran")
     public BasicRes getDaysStock(@RequestParam(defaultValue = "5") Integer days,
-                                 @RequestParam String code) {
+                                 @RequestParam String code) throws InvalidParamException {
         if (days > 31) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();
         List<DailyTranDTO> resultList = searchService.getDaysStockAndCorp(days, code);
@@ -64,9 +66,9 @@ public class SearchController {
      */
     @GetMapping("corptran")
     public BasicRes getDaysCorp(@RequestParam(defaultValue = "5") Integer days,
-                                @RequestParam String code) {
+                                @RequestParam String code) throws InvalidParamException {
         if (days > 31) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();
         List<DailyTranDTO> resultList = searchService.getDaysStockAndCorp(days, code);
@@ -82,9 +84,9 @@ public class SearchController {
      */
     @GetMapping("distribution")
     public BasicRes getWeeksDistrubution(@RequestParam(defaultValue = "4") Integer weeks,
-                                         @RequestParam String code) {
+                                         @RequestParam String code) throws InvalidParamException {
         if (weeks > 52) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();
         List<DistributionDTO> resultList = searchService.getWeeksDistribution(weeks, code);
@@ -104,12 +106,12 @@ public class SearchController {
     public BasicRes getSlowlyIncrease(@RequestParam Integer date,
                                       @RequestParam(defaultValue = "50") Double flucPercentLL,
                                       @RequestParam(defaultValue = "100") Double flucPercentUL,
-                                      @RequestParam Integer days) {
+                                      @RequestParam Integer days) throws DateParseException, InvalidParamException {
         if (days > 31 ||
                 !DownloadUtils.isDateConform(date.toString()) ||
                 !DownloadUtils.isValidDate(date.toString(), "yyyyMMdd") ||
                 DownloadUtils.isDateSaturdayOrSunday(date.toString())) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
@@ -129,10 +131,10 @@ public class SearchController {
     public BasicRes getSlowlyIncreaseTradingVol(@RequestParam Integer date,
                                                 @RequestParam Double flucPercentLL,
                                                 @RequestParam Double flucPercentUL,
-                                                @RequestParam Integer days) {
+                                                @RequestParam Integer days) throws DateParseException, InvalidParamException {
         if (days > 366 || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
                 !DownloadUtils.isDateConform(date.toString())) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncreaseTradingVol(date, flucPercentLL, flucPercentUL, days);
         BasicRes resp = new BasicRes();
@@ -150,10 +152,10 @@ public class SearchController {
     @GetMapping("flucperanddate")
     public BasicRes getByDateAndFlucPer(@RequestParam Integer date,
                                         @RequestParam Double flucPercentLL,
-                                        @RequestParam Double flucPercentUL) {
+                                        @RequestParam Double flucPercentUL) throws DateParseException, InvalidParamException {
         if (DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
                 !DownloadUtils.isDateConform(date.toString())) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         List<FlucPercentDTO> resultList = searchService.getByDateAndFlucPer(flucPercentUL, flucPercentLL, date);
         BasicRes resp = new BasicRes();
@@ -169,10 +171,10 @@ public class SearchController {
      */
     @GetMapping("overbought")
     public BasicRes getOverboughtRanking(@RequestParam Integer date,
-                                         @RequestParam Integer overbought) {
+                                         @RequestParam Integer overbought) throws DateParseException, InvalidParamException {
         if (DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
                 !DownloadUtils.isDateConform(date.toString())) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();
         List<OverboughtRankingDTO> resultList = searchService.getOverboughtRanking(date, overbought);
@@ -186,10 +188,10 @@ public class SearchController {
      * @return
      */
     @GetMapping("bigblackk")
-    public BasicRes getBigBlackK(@RequestParam Integer date) {
+    public BasicRes getBigBlackK(@RequestParam Integer date) throws InvalidParamException, DateParseException {
         if (DownloadUtils.isDateAfterToday(date.toString(), "yyyyMMdd") || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
                 !DownloadUtils.isDateConform(date.toString())) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();
         List<FiltStockDailyDTO> resultList = searchService.getBlackKLine(date);

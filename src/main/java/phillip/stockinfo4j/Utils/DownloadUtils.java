@@ -191,7 +191,7 @@ public class DownloadUtils {
             // 否則SimpleDateFormat會比較寬鬆地驗證日期，比如2007/02/29會被接受，並轉換成2007/03/01
             format.setLenient(false);
             format.parse(date);
-        } catch (ParseException e) {
+        } catch (ParseException | NullPointerException e) {
             // e.printStackTrace();
             // 如果throw java.text.ParseException或者NullPointerException，就說明格式不對
             convertSuccess = false;

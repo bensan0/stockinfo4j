@@ -169,6 +169,8 @@
 <label>狀態:</label>
 <text id="getdailystatus"></text>
 <br>
+<span>---------------</span>
+<br>
 
 <span>獲取當周股權分佈資訊</span>
 <button onclick="getDistribution()">執行</button>
@@ -176,29 +178,56 @@
 <label>狀態:</label>
 <text id="getdistributionstatus"></text>
 <br>
+<span>---------------</span>
+<br>
 
+<span>備份個股交易資料</span><br>
+<input id="backupsdstartdate" type="number" maxlength="8" placeholder="起始日yyyyMMdd"><br>
+<input id="backupsdenddate" type="number" maxlength="8" placeholder="結束日yyyyMMdd"><br>
+<label>備份後是否刪除資料:</label>
+<label><input type="radio" name="sddel" value="true">是</label>
+<label><input type="radio" name="sddel" value="false">否</label><br>
+<button onclick="backupsd()">執行</button>
+<br>
+<label>狀態:</label>
+<text id="backupsdstatus"></text>
+<br>
+<span>---------------</span>
+<br>
+
+<span>備份法人交易資料</span><br>
+<input id="backupcdstartdate" type="number" maxlength="8" placeholder="起始日yyyyMMdd"><br>
+<input id="backupcdenddate" type="number" maxlength="8" placeholder="結束日yyyyMMdd"><br>
+<label>備份後是否刪除資料:</label>
+<label><input type="radio" name="cddel" value="true">是</label>
+<label><input type="radio" name="cddel" value="false">否</label><br>
+<button onclick="backupcd()">執行</button>
+<br>
+<label>狀態:</label>
+<text id="backupcdstatus"></text>
+<br>
 <!-- <span>測試</span>
 <button onclick="fetchApiGet()">執行</button><br>
 <text id=""></text>
 <br> -->
 
-<div class="container-xxl">
-    <h1>台股加權指數</h1>
-    <div id="" name="" class="functionblock tableblock">
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th scope="col">日期</th>
-                <th scope="col">收盤指數</th>
-                <th scope="col">漲跌</th>
-                <th scope="col">漲跌幅</th>
-            </tr>
-            </thead>
-            <tbody id="tcwsitbody">
-            </tbody>
-        </table>
-    </div>
-</div>
+<!--<div class="container-xxl">-->
+<!--    <h1>台股加權指數</h1>-->
+<!--    <div id="" name="" class="functionblock tableblock">-->
+<!--        <table class="table table-striped">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--                <th scope="col">日期</th>-->
+<!--                <th scope="col">收盤指數</th>-->
+<!--                <th scope="col">漲跌</th>-->
+<!--                <th scope="col">漲跌幅</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody id="tcwsitbody">-->
+<!--            </tbody>-->
+<!--        </table>-->
+<!--    </div>-->
+<!--</div>-->
 
 <span class="split"></span>
 

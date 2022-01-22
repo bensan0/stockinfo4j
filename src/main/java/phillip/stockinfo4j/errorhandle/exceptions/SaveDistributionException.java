@@ -6,7 +6,7 @@ import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 
 @Data
 @NoArgsConstructor
-public class SaveDistributionException extends CustomRuntimeException{
+public class SaveDistributionException extends CustomException{
 
     public SaveDistributionException(ErrorEnum errorEnum,String originalErrorMsg) {
         super(originalErrorMsg, errorEnum);

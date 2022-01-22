@@ -20,4 +20,11 @@ public interface StockDailyRepo extends JpaRepository<StockDailyTran, Long> {
 
     @Query(value = "select * from stock_daily_trans where date = :date and fluc_percent <= :flucPerUL and fluc_percent >= :flucPerLL", nativeQuery = true)
     List<StockDailyTran> findByflucPerAndDate(@Param("flucPerUL") Double flucPerUL, @Param("flucPerLL") Double flucPerLL, @Param("date") Integer date);
+
+    @Query(value = "select * from stock_daily_trans where date between :startDate and :endDate", nativeQuery = true)
+    List<StockDailyTran> findBetweenDate(@Param("startDate") Integer startDate, @Param("endDate") Integer endDate);
+
+    @Query(value = "delete from stock_daily_trans where date between :startDate and :endDate", nativeQuery = true)
+    void delBetweenDate(@Param("startDate") Integer startDate, @Param("endDate") Integer endDate);
+
 }

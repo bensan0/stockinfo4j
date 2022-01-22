@@ -6,7 +6,7 @@ import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 
 @Data
 @NoArgsConstructor
-public class SaveCorpDailyFailedException extends CustomRuntimeException {
+public class SaveCorpDailyFailedException extends CustomException {
     public SaveCorpDailyFailedException(ErrorEnum errorEnum,String originalErrorMsg) {
         super(originalErrorMsg, errorEnum);
     }

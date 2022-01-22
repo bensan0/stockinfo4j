@@ -14,7 +14,6 @@ public class RestControllerAdvice {
 
     @ExceptionHandler(Exception.class)
     public BasicRes handleException(Exception e) {
-        System.out.println("handleException");
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(ErrorEnum.UnDefinedException);
         resp.setErrorDetail(e.getMessage());
@@ -23,7 +22,6 @@ public class RestControllerAdvice {
 
     @ExceptionHandler(RuntimeException.class)
     public BasicRes handleRuntimeException(RuntimeException e) {
-        e.printStackTrace();
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(ErrorEnum.UDefinedRuntimeException);
         resp.setErrorDetail(e.getMessage());
@@ -47,7 +45,7 @@ public class RestControllerAdvice {
     }
 
     @ExceptionHandler({DateParseException.class})
-    public BasicRes handleCustomRuntimeException2(CustomRuntimeException e) {
+    public BasicRes handleDateParseException(DateParseException e) {
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(e.getErrorEnum());
         resp.setErrorDetail(e.getOriginalErrorMsg());
@@ -55,7 +53,7 @@ public class RestControllerAdvice {
     }
 
     @ExceptionHandler(ExecutionException.class)
-    public BasicRes handleCustomRuntimeException3(Exception e) {
+    public BasicRes handleExecutionException(ExecutionException e) {
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(ErrorEnum.ExecutionError);
         resp.setErrorDetail(e.getMessage());
@@ -63,7 +61,7 @@ public class RestControllerAdvice {
     }
 
     @ExceptionHandler(InterruptedException.class)
-    public BasicRes handleCustomRuntimeException4(Exception e) {
+    public BasicRes handleInterruptedException(InterruptedException e) {
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(ErrorEnum.ThreadInterrupted);
         resp.setErrorDetail(e.getMessage());
@@ -71,10 +69,18 @@ public class RestControllerAdvice {
     }
 
     @ExceptionHandler(InvalidParamException.class)
-    public BasicRes handleCustomRuntimeException4(CustomRuntimeException e) {
+    public BasicRes handleInvalidParamException(InvalidParamException e) {
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(ErrorEnum.InValidParam);
         resp.setErrorDetail(e.getMessage());
+        return resp;
+    }
+
+    @ExceptionHandler(BackupFailedException.class)
+    public BasicRes handleBackupFailedException(BackupFailedException e){
+        BasicRes resp = new BasicRes();
+        resp.setErrorEnum(e.getErrorEnum());
+        resp.setErrorDetail(e.getOriginalErrorMsg());
         return resp;
     }
 }

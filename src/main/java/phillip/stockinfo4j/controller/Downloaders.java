@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.service.DownloadService;
 
@@ -42,7 +43,7 @@ public class Downloaders {
     }
 
     @GetMapping("distribution")
-    public BasicRes getDistribution() throws RuntimeException {
+    public BasicRes getDistribution() throws SaveCorpDailyFailedException {
         BasicRes resp = new BasicRes();
         downloadService.getTWCCDistribution();
         return resp;

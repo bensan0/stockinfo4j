@@ -1,6 +1,8 @@
 package phillip.stockinfo4j.appconfig;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -53,5 +55,18 @@ public class BeanConfig {
         private String StockTPEXListedUrl;
         private String StockTWSEListedUrl;
         private String StockEmergingListedUrl;
+    }
+
+    @Component
+    @ConfigurationProperties(prefix = "backup")
+    @PropertySource("backupsetting.properties")
+    @Data
+    public class BackupSetting{
+        private String filePath;
+        private String dirName;
+        private String extensionName;
+        private Integer perDataVol;
+        private String stockFileName;
+        private String corpFileName;
     }
 }

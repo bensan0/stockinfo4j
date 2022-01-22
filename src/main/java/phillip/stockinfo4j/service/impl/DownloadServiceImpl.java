@@ -12,6 +12,8 @@ import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import phillip.stockinfo4j.Utils.DownloadUtils;
 import phillip.stockinfo4j.appconfig.BeanConfig;
+import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
+import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
 import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
 import phillip.stockinfo4j.errorhandle.exceptions.SaveStockDailyFailedException;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
@@ -66,7 +68,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @throws InterruptedException
      */
 //    @Transactional Async下標註@Transactional無效,需要在內部呼叫的方法上標註@Transactional
-    public void getDaily(String date) throws ExecutionException, InterruptedException {
+    public void getDaily(String date) throws ExecutionException, InterruptedException, SaveCorpDailyFailedException, DeleteFileException, ReadFileException, SaveStockDailyFailedException {
         List<StockDailyTran> stockDailyTrans = new LinkedList<>();
         List<CorpDailyTran> corpDailyTrans = new LinkedList<>();
         CompletableFuture<List<StockDailyTran>> twseStockDailyFuture;
@@ -98,7 +100,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     @Async
-    public void getTWCCDistribution() throws SaveCorpDailyFailedException {
+    public void getTWCCDistribution() throws SaveCorpDailyFailedException, DeleteFileException, ReadFileException {
         System.out.println(Thread.currentThread().getName() + " TWCCDistribution start");
         String filePath = downloadDistribution();
         List<Distribution> distributionList = filtDistribution(filePath);
@@ -110,7 +112,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async
-    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) {
+    public CompletableFuture<List<StockDailyTran>> getTWSEStockDaily(String date) throws DeleteFileException, ReadFileException {
         System.out.println(Thread.currentThread().getName() + " TWSEStock start");
         String filePath = downloadTWSEStockDaily(date);
         List<StockDailyTran> tranList = filtTWSEStockDaily(filePath);
@@ -122,7 +124,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async
-    public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) {
+    public CompletableFuture<List<CorpDailyTran>> getTWSECorpDaily(String date) throws DeleteFileException, ReadFileException {
         System.out.println(Thread.currentThread().getName() + " TWSECorp start");
         String filePath = downloadTWSECorpDaily(date);
         List<CorpDailyTran> tranList = filtTWSECorpDaily(filePath);
@@ -134,7 +136,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async
-    public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) {
+    public CompletableFuture<List<StockDailyTran>> getTPEXStockDaily(String date) throws DeleteFileException, ReadFileException {
         System.out.println(Thread.currentThread().getName() + " TPEXStock start");
         String filePath = downloadTPEXStockDaily(date);
         List<StockDailyTran> tranList = filtTPEXStockDaily(filePath);
@@ -146,7 +148,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param date
      */
     @Async
-    public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) {
+    public CompletableFuture<List<CorpDailyTran>> getTPEXCorpDaily(String date) throws DeleteFileException, ReadFileException {
         System.out.println(Thread.currentThread().getName() + " TPEXCorp start");
         String filePath = downloadTPEXCorpDaily(date);
         List<CorpDailyTran> tranList = filtTPEXCorpDaily(filePath);
@@ -191,7 +193,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @throws IOException
      */
-    private List<StockDailyTran> filtTWSEStockDaily(String filePath) {
+    private List<StockDailyTran> filtTWSEStockDaily(String filePath) throws ReadFileException, DeleteFileException {
         List<StockDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
@@ -282,7 +284,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<CorpDailyTran> filtTWSECorpDaily(String filePath) {
+    private List<CorpDailyTran> filtTWSECorpDaily(String filePath) throws DeleteFileException, ReadFileException {
         List<CorpDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
@@ -364,7 +366,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<StockDailyTran> filtTPEXStockDaily(String filePath) {
+    private List<StockDailyTran> filtTPEXStockDaily(String filePath) throws DeleteFileException, ReadFileException {
         List<StockDailyTran> tranList = new ArrayList<>();
         String content = DownloadUtils.readFileToString(filePath, "Big5");
         String[] split = content.split("次日跌停價");
@@ -453,7 +455,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<CorpDailyTran> filtTPEXCorpDaily(String filePath) {
+    private List<CorpDailyTran> filtTPEXCorpDaily(String filePath) throws DeleteFileException, ReadFileException {
         List<CorpDailyTran> tranList = new LinkedList<>();
         String content = DownloadUtils.readFileToString(filePath, "big5");
         String[] split = content.split("三大法人買賣超股數合計");
@@ -573,7 +575,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @param filePath
      * @return
      */
-    private List<Distribution> filtDistribution(String filePath) {
+    private List<Distribution> filtDistribution(String filePath) throws DeleteFileException, ReadFileException {
         List<Distribution> tranList = new LinkedList<>();
         String content = DownloadUtils.readFileToString(filePath, "utf-8");
         if (content.length() == 0) {

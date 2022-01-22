@@ -8,7 +8,7 @@ import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 
 @Data
 @NoArgsConstructor
-public class ReadFileException extends CustomRuntimeException {
+public class ReadFileException extends CustomException {
     public ReadFileException(ErrorEnum errorEnum,String originalErrorMsg) {
         super(originalErrorMsg, errorEnum);
     }

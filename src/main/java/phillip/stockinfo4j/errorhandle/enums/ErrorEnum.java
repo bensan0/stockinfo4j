@@ -19,6 +19,9 @@ public enum ErrorEnum implements IBaseErrorInfo {
     FailedSave("0007", "持久化異常"),
     FailedToDeleteFile("0008", "刪除檔案錯誤"),
     InValidParam("0009", "參數異常"),
+    BackupFailed("0010", "備份檔案失敗"),
+    BackupFileIsExisted("0011", "檔案已存在"),
+    NoData("0012", "查無資料"),
     ;
 
     private final String code;
