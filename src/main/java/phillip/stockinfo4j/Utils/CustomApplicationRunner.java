@@ -107,11 +107,20 @@ public class CustomApplicationRunner {
         }
     }
 
+
+    /**
+     * 啟動時每日交易快取
+     */
     @Component
     @Order(2)
     private class Runner2 implements ApplicationRunner {
 
         public Runner2() {
+        }
+
+        @Cacheable(value = CacheServiceImpl.DailyTranCache, key = "#root.args[0]", sync = true)
+        public Map<String, DailyTranDTO> cacheDailyTran(Integer yyyyMMdd, Map<String, DailyTranDTO> dailyTran) {
+            return dailyTran;
         }
 
         @Override
@@ -175,16 +184,9 @@ public class CustomApplicationRunner {
                     }
             );
 
-            transMap.forEach((date, dateTrans) -> {
-                applicationContext.getBean(CustomApplicationRunner.class).cacheDailyTran(date, dateTrans);
-            });
+            transMap.forEach((date, dateTrans) -> cacheDailyTran(date, dateTrans));
         }
 
-    }
-
-    @Cacheable(value = CacheServiceImpl.DailyTranCache, key = "#root.args[0]", sync = true)
-    public Map<String, DailyTranDTO> cacheDailyTran(Integer yyyyMMdd, Map<String, DailyTranDTO> dailyTran) {
-        return dailyTran;
     }
 
 }
