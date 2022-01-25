@@ -152,7 +152,6 @@ public class CustomApplicationRunner {
                 dates.add(Integer.valueOf(before.format(dtf)));
                 before = before.minusDays(1);
             }
-
             //查詢日期內交易
             List<DailyTranDTO> resultList;
             String qstr = "select ifnull(c.industry,'') as industry," +
@@ -183,8 +182,7 @@ public class CustomApplicationRunner {
                         }
                     }
             );
-
-            transMap.forEach((date, dateTrans) -> cacheDailyTran(date, dateTrans));
+            transMap.forEach((date, dateTrans) -> applicationContext.getBean(Runner2.class).cacheDailyTran(date, dateTrans));
         }
 
     }

@@ -3,12 +3,11 @@ package phillip.stockinfo4j.errorhandle.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import phillip.stockinfo4j.errorhandle.IBaseErrorInfo;
 
 import java.util.Arrays;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum ErrorEnum implements IBaseErrorInfo {
+public enum ErrorEnum  {
     Success("0000", "成功"),
     FailedToReadFile("0001", "讀取檔案失敗"),
     UnDefinedException("0002", "未定義錯誤"),
@@ -34,12 +33,10 @@ public enum ErrorEnum implements IBaseErrorInfo {
     }
 
 
-    @Override
     public String getCode() {
         return this.code;
     }
 
-    @Override
     public String getDescription() {
         return this.description;
     }

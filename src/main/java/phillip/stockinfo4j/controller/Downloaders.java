@@ -7,13 +7,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
-import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
-import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveDistributionException;
+import phillip.stockinfo4j.errorhandle.exceptions.*;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.service.DownloadService;
 
 import java.time.LocalDate;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("downloaders")
@@ -30,7 +29,7 @@ public class Downloaders {
      * @param yyyyMMdd
      */
     @GetMapping("/daily")
-    public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws Exception {
+    public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws DateParseException, DeleteFileException, SaveCorpDailyFailedException, ExecutionException, InterruptedException, ReadFileException, SaveStockDailyFailedException {
         BasicRes resp = new BasicRes();
         if (yyyyMMdd == null || yyyyMMdd.length() == 0) {
             yyyyMMdd = LocalDate.now().format(OtherUtils.getDateTimeFormatter("yyyyMMdd"));

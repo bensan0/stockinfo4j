@@ -198,4 +198,11 @@ public class OtherUtils {
         }
         return convertSuccess;
     }
+
+    public static String getStackTrace(Throwable throwable) {
+        Writer result = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(result);
+        throwable.printStackTrace(printWriter);
+        return result.toString();
+    }
 }

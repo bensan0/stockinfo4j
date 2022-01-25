@@ -1,9 +1,6 @@
 package phillip.stockinfo4j.service;
 
-import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
-import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveDistributionException;
+import phillip.stockinfo4j.errorhandle.exceptions.*;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
 
@@ -14,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 
 public interface DownloadService {
 
-    void getDaily(String date) throws Exception;
+    void getDaily(String date) throws ExecutionException, InterruptedException, SaveCorpDailyFailedException, DeleteFileException, ReadFileException, SaveStockDailyFailedException;
 
     void getTWCCDistribution() throws DeleteFileException, ReadFileException, SaveDistributionException;
 

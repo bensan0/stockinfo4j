@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.aop.anno.Log;
 import phillip.stockinfo4j.aop.dto.LogDTO;
 
@@ -56,7 +57,7 @@ public class LogAspect {
 //    }
 
     @Around("annoAndController()")
-    public Object logAround(ProceedingJoinPoint joinPoint) {
+    public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
 
         Object result = null;
         LogDTO dto = new LogDTO();
@@ -73,17 +74,18 @@ public class LogAspect {
             String paramsJson = getParamsMapJsonString(parameters, args);
             log.info(className + "-" + methodName + " start, params: " + paramsJson);
             Long startTime = System.currentTimeMillis();
-            result = joinPoint.proceed();
-            Long timeCost = System.currentTimeMillis() - startTime;
             dto.setClassName(className);
             dto.setArgs(paramsJson);
             dto.setStartTime(startTime);
+            dto.setMethodName(methodName);
+            result = joinPoint.proceed();
+            Long timeCost = System.currentTimeMillis() - startTime;
             dto.setTimeCost(timeCost.intValue());
             dto.setResult(result);
-            dto.setMethodName(methodName);
         } catch (Throwable e) {
-            log.error(e.getMessage());
+            log.error(OtherUtils.getStackTrace(e));
             dto.setThrowable(e);
+            throw e;//拋出讓RestControllerAdvice捕獲
         } finally {
             log.info(dto.toString());
         }
