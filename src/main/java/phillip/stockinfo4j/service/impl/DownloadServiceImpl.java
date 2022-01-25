@@ -10,12 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.appconfig.BeanConfig;
-import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
-import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveStockDailyFailedException;
+import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
+import phillip.stockinfo4j.errorhandle.exceptions.*;
 import phillip.stockinfo4j.model.pojo.CorpDailyTran;
 import phillip.stockinfo4j.model.pojo.Distribution;
 import phillip.stockinfo4j.model.pojo.StockDailyTran;
@@ -100,7 +98,7 @@ public class DownloadServiceImpl implements DownloadService {
      * @return
      */
     @Async
-    public void getTWCCDistribution() throws SaveCorpDailyFailedException, DeleteFileException, ReadFileException {
+    public void getTWCCDistribution() throws DeleteFileException, ReadFileException, SaveDistributionException {
         System.out.println(Thread.currentThread().getName() + " TWCCDistribution start");
         String filePath = downloadDistribution();
         List<Distribution> distributionList = filtDistribution(filePath);
@@ -195,7 +193,7 @@ public class DownloadServiceImpl implements DownloadService {
      */
     private List<StockDailyTran> filtTWSEStockDaily(String filePath) throws ReadFileException, DeleteFileException {
         List<StockDailyTran> tranList = new ArrayList<>();
-        String content = DownloadUtils.readFileToString(filePath, "Big5");
+        String content = OtherUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
             return tranList;
         }
@@ -203,7 +201,7 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[1]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = DownloadUtils.getDecimalFormat();
+        DecimalFormat df = OtherUtils.getDecimalFormat();
         try {
             while (sc.hasNext()) {
                 StockDailyTran tran = new StockDailyTran();
@@ -219,15 +217,15 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setTradingVol(DownloadUtils.parseStrToDouble(split1[2].replace(",", "").trim()).longValue() / 1000);
-                tran.setDeal(DownloadUtils.parseStrToDouble(split1[3].replace(",", "").trim()).longValue());
-                tran.setTradingAmount(DownloadUtils.parseStrToLong(split1[4].replace(",", "").trim()));
-                tran.setOpening(DownloadUtils.parseStrToDouble(split1[5].replace(",", "").trim()));
-                tran.setHighest(DownloadUtils.parseStrToDouble(split1[6].replace(",", "").trim()));
-                tran.setLowest(DownloadUtils.parseStrToDouble(split1[7].replace(",", "").trim()));
-                tran.setClosing(DownloadUtils.parseStrToDouble(split1[8].replace(",", "").trim()));
+                tran.setTradingVol(OtherUtils.parseStrToDouble(split1[2].replace(",", "").trim()).longValue() / 1000);
+                tran.setDeal(OtherUtils.parseStrToDouble(split1[3].replace(",", "").trim()).longValue());
+                tran.setTradingAmount(OtherUtils.parseStrToLong(split1[4].replace(",", "").trim()));
+                tran.setOpening(OtherUtils.parseStrToDouble(split1[5].replace(",", "").trim()));
+                tran.setHighest(OtherUtils.parseStrToDouble(split1[6].replace(",", "").trim()));
+                tran.setLowest(OtherUtils.parseStrToDouble(split1[7].replace(",", "").trim()));
+                tran.setClosing(OtherUtils.parseStrToDouble(split1[8].replace(",", "").trim()));
                 if (split1[9].equals("+") || split1[9].equals("-")) {
-                    tran.setFluc(DownloadUtils.parseStrToDouble(split1[9].trim() + split1[10].replace(",", "").trim()));
+                    tran.setFluc(OtherUtils.parseStrToDouble(split1[9].trim() + split1[10].replace(",", "").trim()));
                     Double yesterdayClosing = tran.getClosing() - tran.getFluc();
                     Double flucPer = Double.parseDouble(df.format((tran.getFluc() * 100 / yesterdayClosing)));
                     tran.setFlucPer(flucPer);
@@ -238,12 +236,12 @@ public class DownloadServiceImpl implements DownloadService {
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 14, li + 1 + 22)));
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
-                tran.setPer(DownloadUtils.parseStrToDouble(split1[15]));
+                tran.setPer(OtherUtils.parseStrToDouble(split1[15]));
                 tranList.add(tran);
             }
         } finally {
             sc.close();
-            DownloadUtils.deleteFile(filePath);
+            OtherUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -286,7 +284,7 @@ public class DownloadServiceImpl implements DownloadService {
      */
     private List<CorpDailyTran> filtTWSECorpDaily(String filePath) throws DeleteFileException, ReadFileException {
         List<CorpDailyTran> tranList = new ArrayList<>();
-        String content = DownloadUtils.readFileToString(filePath, "Big5");
+        String content = OtherUtils.readFileToString(filePath, "Big5");
         if (content.length() == 0) {
             return tranList;
         }
@@ -310,13 +308,13 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setForeignInvestors(DownloadUtils.parseStrToLong(split1[4].trim().replace(",", "")) / 1000);
-                tran.setForeignCorp(DownloadUtils.parseStrToLong(split1[7].trim().replace(",", "")) / 1000);
-                tran.setInvestmentTrust(DownloadUtils.parseStrToLong(split1[10].trim().replace(",", "")) / 1000);
-                tran.setDealer(DownloadUtils.parseStrToLong(split1[11].trim().replace(",", "")) / 1000);
-                tran.setDealerSelf(DownloadUtils.parseStrToLong(split1[14].trim().replace(",", "")) / 1000);
-                tran.setDealerHedge(DownloadUtils.parseStrToLong(split1[17].trim().replace(",", "")) / 1000);
-                tran.setTotal(DownloadUtils.parseStrToLong(split1[18].trim().replace(",", "")) / 1000);
+                tran.setForeignInvestors(OtherUtils.parseStrToLong(split1[4].trim().replace(",", "")) / 1000);
+                tran.setForeignCorp(OtherUtils.parseStrToLong(split1[7].trim().replace(",", "")) / 1000);
+                tran.setInvestmentTrust(OtherUtils.parseStrToLong(split1[10].trim().replace(",", "")) / 1000);
+                tran.setDealer(OtherUtils.parseStrToLong(split1[11].trim().replace(",", "")) / 1000);
+                tran.setDealerSelf(OtherUtils.parseStrToLong(split1[14].trim().replace(",", "")) / 1000);
+                tran.setDealerHedge(OtherUtils.parseStrToLong(split1[17].trim().replace(",", "")) / 1000);
+                tran.setTotal(OtherUtils.parseStrToLong(split1[18].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
                 tran.setDate(Integer.parseInt(filePath.substring(li + 1 + 13, li + 1 + 21)));
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
@@ -324,7 +322,7 @@ public class DownloadServiceImpl implements DownloadService {
             }
         } finally {
             sc.close();
-            DownloadUtils.deleteFile(filePath);
+            OtherUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -368,7 +366,7 @@ public class DownloadServiceImpl implements DownloadService {
      */
     private List<StockDailyTran> filtTPEXStockDaily(String filePath) throws DeleteFileException, ReadFileException {
         List<StockDailyTran> tranList = new ArrayList<>();
-        String content = DownloadUtils.readFileToString(filePath, "Big5");
+        String content = OtherUtils.readFileToString(filePath, "Big5");
         String[] split = content.split("次日跌停價");
         if (split.length < 2) {
             return tranList;
@@ -378,7 +376,7 @@ public class DownloadServiceImpl implements DownloadService {
         Scanner sc = new Scanner(split[0]);
         sc.useDelimiter("\n");
         sc.useDelimiter("\r\n");
-        DecimalFormat df = DownloadUtils.getDecimalFormat();
+        DecimalFormat df = OtherUtils.getDecimalFormat();
         try {
             while (sc.hasNext()) {
                 StockDailyTran tran = new StockDailyTran();
@@ -397,24 +395,24 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setClosing(DownloadUtils.parseStrToDouble(split1[2].trim().replace(",", "")));
-                tran.setFluc(DownloadUtils.parseStrToDouble(split1[3].trim().replace(",", "")));
-                tran.setOpening(DownloadUtils.parseStrToDouble(split1[4].trim().replace(",", "")));
-                tran.setHighest(DownloadUtils.parseStrToDouble(split1[5].trim().replace(",", "")));
-                tran.setLowest(DownloadUtils.parseStrToDouble(split1[6].trim().replace(",", "")));
-                tran.setTradingVol(DownloadUtils.parseStrToLong(split1[8].trim().replace(",", "")) / 1000);
-                tran.setTradingAmount(DownloadUtils.parseStrToLong(split1[9].trim().replace(",", "")));
-                tran.setDeal(DownloadUtils.parseStrToLong(split1[10].trim().replace(",", "")));
+                tran.setClosing(OtherUtils.parseStrToDouble(split1[2].trim().replace(",", "")));
+                tran.setFluc(OtherUtils.parseStrToDouble(split1[3].trim().replace(",", "")));
+                tran.setOpening(OtherUtils.parseStrToDouble(split1[4].trim().replace(",", "")));
+                tran.setHighest(OtherUtils.parseStrToDouble(split1[5].trim().replace(",", "")));
+                tran.setLowest(OtherUtils.parseStrToDouble(split1[6].trim().replace(",", "")));
+                tran.setTradingVol(OtherUtils.parseStrToLong(split1[8].trim().replace(",", "")) / 1000);
+                tran.setTradingAmount(OtherUtils.parseStrToLong(split1[9].trim().replace(",", "")));
+                tran.setDeal(OtherUtils.parseStrToLong(split1[10].trim().replace(",", "")));
                 Double yesterdayClosing = tran.getClosing();
-                tran.setFlucPer(DownloadUtils.parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
+                tran.setFlucPer(OtherUtils.parseStrToDouble(df.format(tran.getFluc() * 100 / yesterdayClosing)));
                 int li = filePath.lastIndexOf("/");
-                tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 14, li + 1 + 22)));
+                tran.setDate(OtherUtils.parseStrToInteger(filePath.substring(li + 1 + 14, li + 1 + 22)));
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
         } finally {
             sc.close();
-            DownloadUtils.deleteFile(filePath);
+            OtherUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -457,7 +455,7 @@ public class DownloadServiceImpl implements DownloadService {
      */
     private List<CorpDailyTran> filtTPEXCorpDaily(String filePath) throws DeleteFileException, ReadFileException {
         List<CorpDailyTran> tranList = new LinkedList<>();
-        String content = DownloadUtils.readFileToString(filePath, "big5");
+        String content = OtherUtils.readFileToString(filePath, "big5");
         String[] split = content.split("三大法人買賣超股數合計");
         if (split[1].length() < 3) {
             return tranList;
@@ -483,21 +481,21 @@ public class DownloadServiceImpl implements DownloadService {
                 }
                 tran.setCode(split1[0].trim());
                 tran.setName(split1[1].trim());
-                tran.setForeignInvestors(DownloadUtils.parseStrToLong(split1[4].trim().replace(",", "")) / 1000);
-                tran.setForeignCorp(DownloadUtils.parseStrToLong(split1[7].trim().replace(",", "")) / 1000);
-                tran.setInvestmentTrust(DownloadUtils.parseStrToLong(split1[13].trim().replace(",", "")) / 1000);
-                tran.setDealerSelf(DownloadUtils.parseStrToLong(split1[16].trim().replace(",", "")) / 1000);
-                tran.setDealerHedge(DownloadUtils.parseStrToLong(split1[19].trim().replace(",", "")) / 1000);
-                tran.setDealer(DownloadUtils.parseStrToLong(split1[22].trim().replace(",", "")) / 1000);
-                tran.setTotal(DownloadUtils.parseStrToLong(split1[23].trim().replace(",", "")) / 1000);
+                tran.setForeignInvestors(OtherUtils.parseStrToLong(split1[4].trim().replace(",", "")) / 1000);
+                tran.setForeignCorp(OtherUtils.parseStrToLong(split1[7].trim().replace(",", "")) / 1000);
+                tran.setInvestmentTrust(OtherUtils.parseStrToLong(split1[13].trim().replace(",", "")) / 1000);
+                tran.setDealerSelf(OtherUtils.parseStrToLong(split1[16].trim().replace(",", "")) / 1000);
+                tran.setDealerHedge(OtherUtils.parseStrToLong(split1[19].trim().replace(",", "")) / 1000);
+                tran.setDealer(OtherUtils.parseStrToLong(split1[22].trim().replace(",", "")) / 1000);
+                tran.setTotal(OtherUtils.parseStrToLong(split1[23].trim().replace(",", "")) / 1000);
                 int li = filePath.lastIndexOf("/");
-                tran.setDate(DownloadUtils.parseStrToInteger(filePath.substring(li + 1 + 13, li + 1 + 21)));
+                tran.setDate(OtherUtils.parseStrToInteger(filePath.substring(li + 1 + 13, li + 1 + 21)));
                 tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
                 tranList.add(tran);
             }
         } finally {
             sc.close();
-            DownloadUtils.deleteFile(filePath);
+            OtherUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -506,7 +504,7 @@ public class DownloadServiceImpl implements DownloadService {
      * 儲存每日股票交易
      *
      * @param tranList
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException SaveStockDailyFailedException
      * @throws NullPointerException
      */
     @Transactional(rollbackFor = Exception.class)
@@ -517,7 +515,7 @@ public class DownloadServiceImpl implements DownloadService {
         long l2 = System.currentTimeMillis();
         System.out.println("儲存stockdaily結束,共花:" + (l2 - l1) + "豪秒");
         if (stockDailyTrans.size() == 0 || stockDailyTrans == null) {
-            throw new SaveStockDailyFailedException();
+            throw new SaveStockDailyFailedException(ErrorEnum.PersistentFailed, "");
         }
     }
 
@@ -525,7 +523,7 @@ public class DownloadServiceImpl implements DownloadService {
      * 儲存每日法人交易
      *
      * @param tranList
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException SaveCorpDailyFailedException
      * @throws NullPointerException
      */
     @Transactional(rollbackFor = Exception.class)
@@ -536,7 +534,7 @@ public class DownloadServiceImpl implements DownloadService {
         long l2 = System.currentTimeMillis();
         System.out.println("儲存corpdaily結束,共花:" + (l2 - l1) + "豪秒");
         if (corpDailyTrans.size() == 0 || corpDailyTrans == null) {
-            throw new SaveCorpDailyFailedException();
+            throw new SaveCorpDailyFailedException(ErrorEnum.PersistentFailed, "");
         }
     }
 
@@ -577,7 +575,7 @@ public class DownloadServiceImpl implements DownloadService {
      */
     private List<Distribution> filtDistribution(String filePath) throws DeleteFileException, ReadFileException {
         List<Distribution> tranList = new LinkedList<>();
-        String content = DownloadUtils.readFileToString(filePath, "utf-8");
+        String content = OtherUtils.readFileToString(filePath, "utf-8");
         if (content.length() == 0) {
             return tranList;
         }
@@ -597,27 +595,27 @@ public class DownloadServiceImpl implements DownloadService {
                 if (split1[1].trim().length() > 4) {
                     continue;
                 }
-                rate = DownloadUtils.parseStrToInteger(split1[2]);
+                rate = OtherUtils.parseStrToInteger(split1[2]);
                 switch (rate) {
                     case 11:
                         tran.setCode(split1[1]);
-                        tran.setDate(DownloadUtils.parseStrToInteger(split1[0]));
+                        tran.setDate(OtherUtils.parseStrToInteger(split1[0]));
                         tran.setCdUnion(tran.getCode() + "-" + tran.getDate());
-                        tran.setRate11(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate11(split1[3] + "/" + OtherUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                     case 12:
-                        tran.setRate12(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate12(split1[3] + "/" + OtherUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 13:
-                        tran.setRate13(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate13(split1[3] + "/" + OtherUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 14:
-                        tran.setRate14(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate14(split1[3] + "/" + OtherUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 15:
-                        tran.setRate15(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setRate15(split1[3] + "/" + OtherUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         break;
                     case 17:
-                        tran.setTotal(split1[3] + "/" + DownloadUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
+                        tran.setTotal(split1[3] + "/" + OtherUtils.parseStrToLong(split1[4]) / 1000 + "/" + split1[5]);
                         tranList.add(tran);
                         tran = new Distribution();
                         break;
@@ -627,7 +625,7 @@ public class DownloadServiceImpl implements DownloadService {
             }
         } finally {
             sc.close();
-            DownloadUtils.deleteFile(filePath);
+            OtherUtils.deleteFile(filePath);
         }
         return tranList;
     }
@@ -635,17 +633,17 @@ public class DownloadServiceImpl implements DownloadService {
     /***
      * 儲存股權分佈
      * @param distributionList
-     * @throws SaveCorpDailyFailedException
+     * @throws SaveDistributionException
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveDistribution(List<Distribution> distributionList) throws SaveCorpDailyFailedException {
+    public void saveDistribution(List<Distribution> distributionList) throws SaveDistributionException {
         System.out.println("儲存distribution開始");
         long l1 = System.currentTimeMillis();
         distributionList = distributionRepo.saveAll(distributionList);
         long l2 = System.currentTimeMillis();
         System.out.println("儲存distribution結束,共花:" + (l2 - l1) + "豪秒");
         if (distributionList.size() == 0 || distributionList == null) {
-            throw new SaveCorpDailyFailedException();
+            throw new SaveDistributionException(ErrorEnum.PersistentFailed, "");
         }
     }
 

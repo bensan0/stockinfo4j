@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.model.dto.*;
 import phillip.stockinfo4j.repository.CorpDailyRepo;
 import phillip.stockinfo4j.repository.DistributionRepo;
@@ -63,8 +63,8 @@ public class SearchServiceImpl implements SearchService {
             }
         }
         //查詢今昨所有交易
-        dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
-        dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
+        dates.add(OtherUtils.parseStrToInteger(today.format(fmt)));
+        dates.add(OtherUtils.parseStrToInteger(yesterday.format(fmt)));
         Map<String, Map<String, DailyTranDTO>> multiDatesTrans = cacheService.getMultiDatesTrans(dates);
         Map<String, DailyTranDTO> todayMap = multiDatesTrans.get(today.format(fmt));
         Map<String, DailyTranDTO> yesterdayMap = multiDatesTrans.get(yesterday.format(fmt));
@@ -101,10 +101,10 @@ public class SearchServiceImpl implements SearchService {
      * @return List<DailyTranDTO>
      */
     public List<DailyTranDTO> getDaysStockAndCorp(Integer days, String code) {
-        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        DateTimeFormatter fmt = OtherUtils.getDateTimeFormatter("yyyyMMdd");
         LocalDate today = LocalDate.now();
         List<Integer> dates = new ArrayList<>();
-        dates.add(DownloadUtils.parseStrToInteger(today.format(fmt)));
+        dates.add(OtherUtils.parseStrToInteger(today.format(fmt)));
         LocalDate yesterday = today.minusDays(1);
         while (true) {
             if (dates.size() == days) {
@@ -114,7 +114,7 @@ public class SearchServiceImpl implements SearchService {
                 yesterday = yesterday.minusDays(1);
                 continue;
             }
-            dates.add(DownloadUtils.parseStrToInteger(yesterday.format(fmt)));
+            dates.add(OtherUtils.parseStrToInteger(yesterday.format(fmt)));
             yesterday = yesterday.minusDays(1);
         }
         List<DailyTranDTO> resultList = new ArrayList<>();
@@ -163,7 +163,7 @@ public class SearchServiceImpl implements SearchService {
      */
     public List<SlowlyIncreaseDTO> getSlowlyIncrease(Integer date, Double flucPerLL, Double flucPerUL, Integer days) {
         List<Integer> dates = new ArrayList<>();
-        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        DateTimeFormatter fmt = OtherUtils.getDateTimeFormatter("yyyyMMdd");
         LocalDate startDate = LocalDate.parse(date.toString(), fmt);
         dates.add(date);
         LocalDate pastDate = null;
@@ -177,7 +177,7 @@ public class SearchServiceImpl implements SearchService {
                 continue;
             } else {
                 diff++;
-                dates.add(DownloadUtils.parseStrToInteger(pastDate.format(fmt)));
+                dates.add(OtherUtils.parseStrToInteger(pastDate.format(fmt)));
             }
         }
 
@@ -204,7 +204,7 @@ public class SearchServiceImpl implements SearchService {
 
         //比對本日收盤與過去均價收盤
         List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
-        DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
+        DecimalFormat dfmt = OtherUtils.getDecimalFormat();
         startDateTranMap.forEach((code, startDateTran) -> {
             List<Double> pastDaysClosingList = pastDaysClosingMap.get(code);
             if (pastDaysClosingList == null || pastDaysClosingList.isEmpty()) {
@@ -246,7 +246,7 @@ public class SearchServiceImpl implements SearchService {
      */
     public List<SlowlyIncreaseDTO> getSlowlyIncreaseTradingVol(Integer date, Double flucPerLL, Double flucPerUL, Integer days) {
         List<Integer> dates = new ArrayList<>();
-        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        DateTimeFormatter fmt = OtherUtils.getDateTimeFormatter("yyyyMMdd");
         LocalDate startDate = LocalDate.parse(date.toString(), fmt);
         dates.add(date);
         LocalDate pastDate = null;
@@ -260,7 +260,7 @@ public class SearchServiceImpl implements SearchService {
                 continue;
             } else {
                 diff++;
-                dates.add(DownloadUtils.parseStrToInteger(pastDate.format(fmt)));
+                dates.add(OtherUtils.parseStrToInteger(pastDate.format(fmt)));
             }
         }
 
@@ -288,7 +288,7 @@ public class SearchServiceImpl implements SearchService {
 
         //比對本日交易量與過去均量
         List<SlowlyIncreaseDTO> resultList = new ArrayList<>();
-        DecimalFormat dfmt = DownloadUtils.getDecimalFormat();
+        DecimalFormat dfmt = OtherUtils.getDecimalFormat();
         startDateTranMap.forEach((code, startDateTran) -> {
             List<Long> pastDaysTradingVolList = pastDaysTradingVolMap.get(code);
             if (pastDaysTradingVolList == null || pastDaysTradingVolList.isEmpty()) {
@@ -389,7 +389,7 @@ public class SearchServiceImpl implements SearchService {
      */
     public List<FiltStockDailyDTO> getBlackKLine(Integer date) {
         List<Integer> dates = new ArrayList<>();
-        DateTimeFormatter fmt = DownloadUtils.getDateTimeFormatter("yyyyMMdd");
+        DateTimeFormatter fmt = OtherUtils.getDateTimeFormatter("yyyyMMdd");
         LocalDate today = LocalDate.parse(date.toString(), fmt);
         dates.add(date);
         LocalDate yesterday = today.minusDays(1);

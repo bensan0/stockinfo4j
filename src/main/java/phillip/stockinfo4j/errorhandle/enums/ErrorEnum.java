@@ -22,6 +22,7 @@ public enum ErrorEnum implements IBaseErrorInfo {
     BackupFailed("0010", "備份檔案失敗"),
     BackupFileIsExisted("0011", "檔案已存在"),
     NoData("0012", "查無資料"),
+    PersistentFailed("0013", "持久化失敗"),
     ;
 
     private final String code;

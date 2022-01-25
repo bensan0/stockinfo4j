@@ -3,7 +3,7 @@ package phillip.stockinfo4j.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.model.dto.AttentionDTO;
 import phillip.stockinfo4j.model.dto.AttentionReq;
 import phillip.stockinfo4j.model.pojo.Attention;
@@ -36,8 +36,8 @@ public class AttentionServiceImpl implements AttentionService {
         Attention attention = new Attention();
         attention.setCode(req.getCode());
         attention.setNote(req.getNote());
-        String today = LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd"));
-        attention.setJoinDate(DownloadUtils.parseStrToInteger(today));
+        String today = LocalDate.now().format(OtherUtils.getDateTimeFormatter("yyyyMMdd"));
+        attention.setJoinDate(OtherUtils.parseStrToInteger(today));
         attentionRepo.save(attention);
     }
 

@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class DownloadUtils {
+public class OtherUtils {
 
     /**
      * 讀取並回傳檔案內容

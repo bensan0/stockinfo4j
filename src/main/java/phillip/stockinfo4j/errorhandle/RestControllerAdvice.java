@@ -28,8 +28,11 @@ public class RestControllerAdvice {
         return resp;
     }
 
-    @ExceptionHandler({ReadFileException.class, DeleteFileException.class})
-    public BasicRes handleCustomRuntimeException1(CustomRuntimeException e) {
+    @ExceptionHandler({ReadFileException.class, DeleteFileException.class,
+            DateParseException.class, InvalidParamException.class,
+            BackupFailedException.class, SaveCorpDailyFailedException.class,
+            SaveStockDailyFailedException.class, SaveDistributionException.class})
+    public BasicRes handleCustomException1(CustomException e) {
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(e.getErrorEnum());
         resp.setErrorDetail(e.getOriginalErrorMsg());
@@ -37,18 +40,10 @@ public class RestControllerAdvice {
     }
 
     @ExceptionHandler({SQLException.class})
-    public BasicRes handleSQLException(SQLException e){
+    public BasicRes handleSQLException(SQLException e) {
         BasicRes resp = new BasicRes();
         resp.setErrorEnum(ErrorEnum.FailedSave);
         resp.setErrorDetail(e.getMessage());
-        return resp;
-    }
-
-    @ExceptionHandler({DateParseException.class})
-    public BasicRes handleDateParseException(DateParseException e) {
-        BasicRes resp = new BasicRes();
-        resp.setErrorEnum(e.getErrorEnum());
-        resp.setErrorDetail(e.getOriginalErrorMsg());
         return resp;
     }
 
@@ -68,19 +63,4 @@ public class RestControllerAdvice {
         return resp;
     }
 
-    @ExceptionHandler(InvalidParamException.class)
-    public BasicRes handleInvalidParamException(InvalidParamException e) {
-        BasicRes resp = new BasicRes();
-        resp.setErrorEnum(ErrorEnum.InValidParam);
-        resp.setErrorDetail(e.getMessage());
-        return resp;
-    }
-
-    @ExceptionHandler(BackupFailedException.class)
-    public BasicRes handleBackupFailedException(BackupFailedException e){
-        BasicRes resp = new BasicRes();
-        resp.setErrorEnum(e.getErrorEnum());
-        resp.setErrorDetail(e.getOriginalErrorMsg());
-        return resp;
-    }
 }

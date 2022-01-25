@@ -2,7 +2,7 @@ package phillip.stockinfo4j.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.errorhandle.exceptions.DateParseException;
 import phillip.stockinfo4j.errorhandle.exceptions.InvalidParamException;
@@ -29,12 +29,12 @@ public class SearchController {
     public BasicRes filtStockDaily(@RequestBody FiltStockDailyReq req) throws InvalidParamException, DateParseException {
         BasicRes resp = new BasicRes();
         String reqDate = req.getDate();
-        if (!DownloadUtils.isDateConform(reqDate) || !DownloadUtils.isValidDate(reqDate, "yyyyMMdd") || DownloadUtils.isDateSaturdayOrSunday(reqDate)) {
+        if (!OtherUtils.isDateConform(reqDate) || !OtherUtils.isValidDate(reqDate, "yyyyMMdd") || OtherUtils.isDateSaturdayOrSunday(reqDate)) {
             throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
 
-        if (DownloadUtils.isDateAfterToday(req.getDate(), "yyyyMMdd")) {
-            req.setDate(LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd")));
+        if (OtherUtils.isDateAfterToday(req.getDate(), "yyyyMMdd")) {
+            req.setDate(LocalDate.now().format(OtherUtils.getDateTimeFormatter("yyyyMMdd")));
         }
         resp.setData(searchService.filtStockDaily(req));
         return resp;
@@ -108,9 +108,9 @@ public class SearchController {
                                       @RequestParam(defaultValue = "100") Double flucPercentUL,
                                       @RequestParam Integer days) throws DateParseException, InvalidParamException {
         if (days > 31 ||
-                !DownloadUtils.isDateConform(date.toString()) ||
-                !DownloadUtils.isValidDate(date.toString(), "yyyyMMdd") ||
-                DownloadUtils.isDateSaturdayOrSunday(date.toString())) {
+                !OtherUtils.isDateConform(date.toString()) ||
+                !OtherUtils.isValidDate(date.toString(), "yyyyMMdd") ||
+                OtherUtils.isDateSaturdayOrSunday(date.toString())) {
             throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncrease(date, flucPercentLL, flucPercentUL, days);
@@ -132,8 +132,8 @@ public class SearchController {
                                                 @RequestParam Double flucPercentLL,
                                                 @RequestParam Double flucPercentUL,
                                                 @RequestParam Integer days) throws DateParseException, InvalidParamException {
-        if (days > 366 || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
-                !DownloadUtils.isDateConform(date.toString())) {
+        if (days > 366 || OtherUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !OtherUtils.isDateConform(date.toString())) {
             throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         List<SlowlyIncreaseDTO> resultList = searchService.getSlowlyIncreaseTradingVol(date, flucPercentLL, flucPercentUL, days);
@@ -153,8 +153,8 @@ public class SearchController {
     public BasicRes getByDateAndFlucPer(@RequestParam Integer date,
                                         @RequestParam Double flucPercentLL,
                                         @RequestParam Double flucPercentUL) throws DateParseException, InvalidParamException {
-        if (DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
-                !DownloadUtils.isDateConform(date.toString())) {
+        if (OtherUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !OtherUtils.isDateConform(date.toString())) {
             throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         List<FlucPercentDTO> resultList = searchService.getByDateAndFlucPer(flucPercentUL, flucPercentLL, date);
@@ -172,8 +172,8 @@ public class SearchController {
     @GetMapping("overbought")
     public BasicRes getOverboughtRanking(@RequestParam Integer date,
                                          @RequestParam Integer overbought) throws DateParseException, InvalidParamException {
-        if (DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
-                !DownloadUtils.isDateConform(date.toString())) {
+        if (OtherUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !OtherUtils.isDateConform(date.toString())) {
             throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();
@@ -189,8 +189,8 @@ public class SearchController {
      */
     @GetMapping("bigblackk")
     public BasicRes getBigBlackK(@RequestParam Integer date) throws InvalidParamException, DateParseException {
-        if (DownloadUtils.isDateAfterToday(date.toString(), "yyyyMMdd") || DownloadUtils.isDateSaturdayOrSunday(date.toString()) ||
-                !DownloadUtils.isDateConform(date.toString())) {
+        if (OtherUtils.isDateAfterToday(date.toString(), "yyyyMMdd") || OtherUtils.isDateSaturdayOrSunday(date.toString()) ||
+                !OtherUtils.isDateConform(date.toString())) {
             throw new InvalidParamException(ErrorEnum.InValidParam, "");
         }
         BasicRes resp = new BasicRes();

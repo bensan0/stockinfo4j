@@ -6,7 +6,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.model.dto.DailyTranDTO;
 import phillip.stockinfo4j.model.dto.DistributionDTO;
 import phillip.stockinfo4j.service.CacheService;
@@ -48,7 +48,7 @@ public class CacheServiceImpl implements CacheService {
                 "a.code , a.name, a.opening , a.highest , a.lowest , a.closing , a.deal , a.trading_vol as tradingVol , a.trading_amount as tradingAmount , a.fluctuation as fluc, a.fluc_percent as flucPer , a.per , a.`date` , a.cd_union as cdUnion ," +
                 "ifnull(b.dealer,0) as dealer ,ifnull(b.dealer_self,0) as dealerSelf ,ifnull(b.dealer_hedge,0) as dealerHedge , ifnull(b.foreign_corp,0) as foreignCorp ,ifnull(b.foreign_investors,0) as foreignInvestors ,ifnull(b.investment_trust,0) as investmentTrust ,ifnull(b.total,0) as corpTotal " +
                 "from (select * from stock_daily_trans where `date` = :date) a " +
-                "left join corp_daily_trans b on a.code = b.code and a.`date` = b.`date` " +
+                "left join corp_daily_trans b on a.cd_union = b.cd_union " +
                 "left join stock_basic_info c on c.code = a.code " +
                 "order by a.code";
 
@@ -135,7 +135,7 @@ public class CacheServiceImpl implements CacheService {
         try {
             resultList = em.createNativeQuery(qstr, "DistributionDTOResult")
                     .setParameter("code", code)
-                    .setParameter("yearAgo", new Integer(yearAgo.format(DownloadUtils.getDateTimeFormatter("yyyyMMdd"))).intValue())
+                    .setParameter("yearAgo", new Integer(yearAgo.format(OtherUtils.getDateTimeFormatter("yyyyMMdd"))).intValue())
                     .getResultList();
         } finally {
             em.close();

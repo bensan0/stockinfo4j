@@ -5,9 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
-import phillip.stockinfo4j.errorhandle.exceptions.SaveCorpDailyFailedException;
+import phillip.stockinfo4j.errorhandle.exceptions.DeleteFileException;
+import phillip.stockinfo4j.errorhandle.exceptions.ReadFileException;
+import phillip.stockinfo4j.errorhandle.exceptions.SaveDistributionException;
 import phillip.stockinfo4j.model.dto.BasicRes;
 import phillip.stockinfo4j.service.DownloadService;
 
@@ -31,11 +33,11 @@ public class Downloaders {
     public BasicRes getStockDaily(@RequestParam("date") String yyyyMMdd) throws Exception {
         BasicRes resp = new BasicRes();
         if (yyyyMMdd == null || yyyyMMdd.length() == 0) {
-            yyyyMMdd = LocalDate.now().format(DownloadUtils.getDateTimeFormatter("yyyyMMdd"));
+            yyyyMMdd = LocalDate.now().format(OtherUtils.getDateTimeFormatter("yyyyMMdd"));
         }
-        DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd);
-        DownloadUtils.isDateConform(yyyyMMdd);
-        if (!DownloadUtils.isDateSaturdayOrSunday(yyyyMMdd) || !DownloadUtils.isDateConform(yyyyMMdd)) {
+        OtherUtils.isDateSaturdayOrSunday(yyyyMMdd);
+        OtherUtils.isDateConform(yyyyMMdd);
+        if (!OtherUtils.isDateSaturdayOrSunday(yyyyMMdd) || !OtherUtils.isDateConform(yyyyMMdd)) {
             resp.builder().errorEnum(ErrorEnum.DateFormatNotAllowed).build();
         }
         downloadService.getDaily(yyyyMMdd);
@@ -43,7 +45,7 @@ public class Downloaders {
     }
 
     @GetMapping("distribution")
-    public BasicRes getDistribution() throws SaveCorpDailyFailedException {
+    public BasicRes getDistribution() throws DeleteFileException, ReadFileException, SaveDistributionException {
         BasicRes resp = new BasicRes();
         downloadService.getTWCCDistribution();
         return resp;

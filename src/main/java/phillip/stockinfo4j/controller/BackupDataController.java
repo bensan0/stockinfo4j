@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import phillip.stockinfo4j.Utils.DownloadUtils;
+import phillip.stockinfo4j.Utils.OtherUtils;
 import phillip.stockinfo4j.appconfig.BeanConfig;
 import phillip.stockinfo4j.errorhandle.enums.ErrorEnum;
 import phillip.stockinfo4j.errorhandle.exceptions.BackupFailedException;
@@ -29,7 +29,7 @@ public class BackupDataController {
     public BasicRes backupStockDaily(Integer startDate, Integer endDate, boolean del) throws IOException, BackupFailedException, InvalidParamException {
         /*檢查起始日<結束日
         檢查起始日 結束日有效性*/
-        if (endDate < startDate || !DownloadUtils.isValidDate(startDate.toString(), "yyyyMMdd") || !DownloadUtils.isValidDate(startDate.toString(), "yyyyMMdd")) {
+        if (endDate < startDate || !OtherUtils.isValidDate(startDate.toString(), "yyyyMMdd") || !OtherUtils.isValidDate(startDate.toString(), "yyyyMMdd")) {
             throw new InvalidParamException(ErrorEnum.DateFormatNotAllowed, "");
         }
 
@@ -41,7 +41,7 @@ public class BackupDataController {
 
     @GetMapping("backupcorpdaily")
     public BasicRes backupCorpDaily(Integer startDate, Integer endDate, boolean del) throws IOException, BackupFailedException, InvalidParamException {
-        if (endDate < startDate || !DownloadUtils.isValidDate(startDate.toString(), "yyyyMMdd") || !DownloadUtils.isValidDate(startDate.toString(), "yyyyMMdd")) {
+        if (endDate < startDate || !OtherUtils.isValidDate(startDate.toString(), "yyyyMMdd") || !OtherUtils.isValidDate(startDate.toString(), "yyyyMMdd")) {
             throw new InvalidParamException(ErrorEnum.DateFormatNotAllowed, "");
         }
 
